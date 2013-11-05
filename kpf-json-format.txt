@@ -1,0 +1,45 @@
+Top level KPF -- JSON dict with keys & python value types as follows
+
+textures <type 'dict'>
+majorVersion <type 'int'>
+loopSlideshow <type 'int'>
+minorVersion <type 'int'>
+eventTimelines <type 'list'>
+title <type 'unicode'>
+timestamp <type 'unicode'>
+showMode <type 'int'>
+creator <type 'unicode'>
+comment <type 'unicode'>
+filename <type 'unicode'>
+pageCount <type 'int'>
+notes <type 'dict'>
+slideCount <type 'int'>
+scalefactor480 <type 'float'>
+author <type 'unicode'>
+slideWidth <type 'int'>
+slideHeight <type 'int'>
+navigatorEvents <type 'list'>
+
+ 
+Textures:
+- Dict 
+-- keys: texture names, e.g. "s107.a"
+-- values: dicts, of format: {u'url': u'images-1/s106.b.jpeg', u'width': 1024, u'height': 768}
+
+EventTimelines:
+Describes how to assemble each slide.
+- List
+- Number of elements matches the number of builds + the number of initial slide states.
+- Each build is as per triggered by manual advance, or start/end of slide. Note the 'automaticPlay' key.
+
+	eventTimeLine element:
+	dict:
+	keys:
+		eventInitialStates <type 'list'>
+		eventAnimations <type 'list'>
+		note <type 'unicode'>
+		automaticPlay <type 'int'>
+		hyperlinks <type 'list'>
+		textRegions <type 'list'>
+
+	eventInitialStates describe how to assemble the slide. Use the zIndex key if present to apply the order (0 -- lowest, increasing). I *think* the order should be reliable
