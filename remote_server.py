@@ -22,6 +22,8 @@ class RemoteHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		print >> self.wfile, output
 
 class Handlers(object):
+	''' Handlers for the various URLs '''
+
 	def next(self):
 		return slide_change("show-slide-next.applescript")
 

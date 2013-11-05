@@ -51,7 +51,7 @@ def assemble_slide(build_index, event):
 			add_texture(im, texture, state["affineTransform"])
 			pass
 
-	fn = "build_%000d.png" % (build_index + 1)
+	fn = "build_%000d.jpg" % (build_index + 1)
 	im.save(fn)
 
 
