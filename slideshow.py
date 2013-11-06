@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import keynote_script
 import kpfutil
 
 import os
@@ -32,9 +33,9 @@ def generate():
 
 	out_dir = os.tmpnam()
 	print >> sys.stderr, "Output: ", out_dir
-	output = subprocess.check_output(["osascript", "export-kpf.applescript", out_dir])
+	output = keynote_script.export_slide_show(out_dir)
 	output = output.strip()
-	if output == "0":
+	if output == "":
 		return Slideshow(out_dir)
 	else:
 		# FAIL.

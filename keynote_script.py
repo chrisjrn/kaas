@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 
+import pipes
 import subprocess
+
+def export_slide_show(to_directory):
+	# export front slideshow to (item 1 of argv) as KPF_RAW
+	command = 'export front slideshow to "%s" as KPF_RAW' % (pipes.quote(to_directory))
+	return __execute__(command)
+
 
 def get_current_slide():
 	pass
