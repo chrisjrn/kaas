@@ -13,9 +13,13 @@ class Slideshow(object):
 		self.__kpf__ = kpfutil.Kpf(os.path.join(kpfdir, "kpf.json"))
 
 	def prepare(self):
+		''' Assembles all of the builds of the slides from the KPF transition
+		information; at the conclusion of this, we'll have a series of slide builds
+		'''
 		builds_dir = os.path.join(self.__kpfdir__, "builds")
 		os.mkdir(builds_dir)
 		self.__kpf__.assemble_slides(builds_dir)
+		self.prepared = True
 
 	def obliterate(self):
 		subprocess.call(["rm", "-rf", self.__kpfdir__])
