@@ -40,15 +40,15 @@ def add_texture(kpf, image, state):
 	textures = kpf.kpf["textures"]
 	transform = state["affineTransform"]
 	texture_file = textures[state["texture"]]["url"]
-	tx, n0, n1, ty, sx, sy = transform
+	sx, n0, n1, sy, tx, ty = transform
 	tex = Image.open(os.path.join(kpf.kpfdir, texture_file))
 	# TODO: support opacity
-	if (tx != 1 or ty != 1):
-		tex = tex.resize((tx, ty))
+	if (sx != 1 or sy != 1):
+		tex = tex.resize((sx, sy))
 	if tex.mode == "RGBA":
-		image.paste(tex, (sx, sy), tex)
+		image.paste(tex, (tx, ty), tex)
 	else:
-		image.paste(tex, (sx, sy))
+		image.paste(tex, (tx, ty))
 
 
 #first_initial_transforms()
