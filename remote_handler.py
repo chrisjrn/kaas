@@ -47,9 +47,9 @@ def handle_html(path, show):
 		"image_url" : "/image/{}".format(build),
 		"notes" : show.notes(slide)
 	}
-	output = HTML_TEMPLATE.format(**format_args)
+	output = HTML_TEMPLATE.format(**format_args).encode("utf8")
 
-	return (200, "text/html", output)
+	return (200, "text/html; charset=utf-8", output)
 
 
 

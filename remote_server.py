@@ -22,7 +22,7 @@ class RemoteHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		self.send_response(response)
 		self.send_header("Content-Type", content_type)
 		self.end_headers()
-		self.wfile.write(body.encode("utf8"))
+		self.wfile.write(body)
 
 	def fail(self):
 		self.send_response(500)
