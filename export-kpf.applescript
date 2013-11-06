@@ -3,12 +3,15 @@
 --==============================
 
 -- Make sure a presentation is opened in Keynote. If not, notify the user and stop.
-tell application "Keynote"
-	if (front slideshow exists) = false then
-		display alert "Unable to proceed." message "Please open a presentation in Keynote."
-		return
-	end if
-	
-	export front slideshow to "/Users/chrisjrn/Desktop/Keynote Export.KPF" as KPF_RAW
-	
-end tell
+on run argv
+	tell application "Keynote"
+		if (front slideshow exists) = false then
+			display alert "Unable to proceed." message "Please open a presentation in Keynote."
+			return 1
+		end if
+		
+		export front slideshow to (item 1 of argv) as KPF_RAW
+		return 0
+		
+	end tell
+end run
