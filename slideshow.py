@@ -17,6 +17,8 @@ class Slideshow(object):
 		self.current_build = 0 # Builds are 0-indexed
 		self.current_slide = 1 # Slides are 1-indexed
 
+		self.build_count = len(self.__kpf__.kpf["eventTimelines"])
+
 	''' Lifecycle methods for slideshow '''
 
 	def prepare(self):
@@ -79,6 +81,50 @@ class Slideshow(object):
 			i += direction
 		return i
 
+	''' Methods for altering the state of the slideshow '''
+
+	def start_slide_show(self):
+		''' Starts the slideshow; stops all builds. '''
+		keynote_script.start_slide_show()
+		slide = keynote_script.get_current_slide()
+		keynote_script.go_to_slide(slide)
+
+		self.current_slide = slide
+		self.current_build = self.build_for_slide(slide)
+
+	def synchronise(self):
+		''' Resets the slideshow to the current slide, synchronsises
+		the build counter appropriately '''
+		slide = keynote_script.get_current_slide()
+		keynote_script.go_to_slide(slide)
+
+		self.current_slide = slide
+		self.current_build = self.build_for_slide(slide)
+
+	def previous(self):
+		''' Moves to the previous slide '''
+
+		keynote_script.previous_build()
+		self.current_build -= 1
+		if self.current_build < 0:
+			self.current_build = 0
+		self.current_slide = self.slide_for_build(self.current_build)
+
+	def next(self):
+		''' Moves to the next slide '''
+
+		keynote_script.next_build()
+		self.current_build += 1
+		self.current_build = self.find_still_from(self.current_build)
+
+		if self.current_build >= self.build_count:
+			self.current_build = self.build_count - 1
+
+		self.current_slide = self.slide_for_build(self.current_build)
+
+
+
+
 
 def generate():
 	''' Asks keynote to export a KPF of the current slide show. 
@@ -107,7 +153,19 @@ if __name__ == "__main__":
 	print >> sys.stderr, "Preparing builds: "
 	slideshow.prepare()
 
-	k = keynote_script
+	slideshow.start_slide_show()
+	slideshow.next()
+	slideshow.next()
+	slideshow.next()
+	slideshow.previous()
+	slideshow.next()
+
+	print slideshow.current_slide
+	print slideshow.current_build
+	print slideshow.build_preview(slideshow.current_build)
+
+
+
 
 	raw_input("press enter to proceed")
 
