@@ -16,7 +16,6 @@ class Slideshow(object):
 		# Variables for guessing where keynote is at the moment. Lol.
 		self.current_build = 0 # Builds are 0-indexed
 		self.current_slide = 1 # Slides are 1-indexed
-		self.certain = False   # Are we certain that current_build is correct?
 
 	''' Lifecycle methods for slideshow '''
 
@@ -29,9 +28,11 @@ class Slideshow(object):
 		self.__kpf__.assemble_slides(builds_dir)
 		
 		self.first_builds = {}
+		self.slides_by_first_event = {}
 		for item in self.__kpf__.kpf["navigatorEvents"]:
 			slide = int(item["eventName"].split()[-1]) # Slide number. Yuck
-			self.first_builds[slide] = item["eventIndex"] 
+			self.first_builds[slide] = item["eventIndex"]
+			self.slides_by_first_event[item["eventIndex"]] = slide
 
 		self.prepared = True
 		self.builds_dir = builds_dir
@@ -61,6 +62,14 @@ class Slideshow(object):
 		''' Returns the first build for the given slide. '''
 		return self.first_builds[slide]
 
+	def slide_for_build(self, build):
+		''' Returns the slide number for a given build '''
+		build_keys = reversed(sorted(self.slides_by_first_event.keys()))
+		for key in build_keys:
+			if build >= key:
+				return self.slides_by_first_event[key]
+
+
 	def find_still_from(self, event, direction = 1):
 		''' Finds the first still event in the specified direction. '''
 
@@ -72,8 +81,8 @@ class Slideshow(object):
 
 
 def generate():
-	# Asks keynote to export a KPF of the current slide show. 
-	# If so, we'll generate Slideshow() and return it.
+	''' Asks keynote to export a KPF of the current slide show. 
+	If so, we'll generate a Slideshow() and return it.'''
 
 	out_dir = os.tmpnam()
 	print >> sys.stderr, "Output: ", out_dir
@@ -86,6 +95,7 @@ def generate():
 		return None
 
 
+''' Demo script '''
 if __name__ == "__main__":
 	print >> sys.stderr, "Exporting slideshow: "
 	slideshow = generate()
@@ -99,26 +109,6 @@ if __name__ == "__main__":
 
 	k = keynote_script
 
-	# Go to given slide; show filename for still for where screen will stop.
-	SLIDE = 1
-	k.start_slide_show()
-	k.go_to_slide(SLIDE)
-	first_build = slideshow.build_for_slide(SLIDE)
-	k.next_build()
-	build_on_screen = slideshow.find_still_from(first_build + 1)
-
-	print >> sys.stderr, "You'll end up on build: ", build_on_screen
-	print >> sys.stderr, "Which looks like: ", slideshow.build_preview(build_on_screen)
-
-	raw_input("Press enter to proceed")
-
-	k.start_slide_show()
-	k.previous_build()
-	k.previous_build()
-	k.previous_build()
-	build_on_screen = build_on_screen - 3
-	print >> sys.stderr, "You'll end up on build: ", build_on_screen
-	print >> sys.stderr, "Which looks like: ", slideshow.build_preview(build_on_screen)
-
+	raw_input("press enter to proceed")
 
 	slideshow.obliterate()
