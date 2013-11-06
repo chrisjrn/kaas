@@ -27,10 +27,10 @@ class Handlers(object):
 	''' Handlers for the various URLs '''
 
 	def next(self):
-		return keynote_script.next_slide()
+		return keynote_script.next_build()
 
 	def previous(self):
-		return keynote_script.previous_slide()
+		return keynote_script.previous_build()
 
 
 _HANDLERS = Handlers()

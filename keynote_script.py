@@ -12,12 +12,12 @@ def get_current_slide():
 	return __execute__("slide number of current slide of front slideshow").strip()
 
 def go_to_slide(slide):
-	return __execute__("show slide %d of front slideshow" % slide)
+	return __execute__("jump to slide %d of front slideshow" % slide)
 
-def next_slide():
+def next_build():
 	return __execute__("show next")
 
-def previous_slide():
+def previous_build():
 	return __execute__("show previous")
 
 def start_slide_show():

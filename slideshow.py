@@ -27,9 +27,16 @@ class Slideshow(object):
 		builds_dir = os.path.join(self.__kpfdir__, "builds")
 		os.mkdir(builds_dir)
 		self.__kpf__.assemble_slides(builds_dir)
+		
+		self.first_builds = {}
+		for item in self.__kpf__.kpf["navigatorEvents"]:
+			slide = int(item["eventName"].split()[-1]) # Slide number. Yuck
+			self.first_builds[slide] = item["eventIndex"] 
+
 		self.prepared = True
 		self.builds_dir = builds_dir
 
+		
 	def obliterate(self):
 		''' Deletes the exported slideshow; most of this object will be invalid
 		from now on. '''
@@ -39,7 +46,7 @@ class Slideshow(object):
 
 	def notes(self, slide):
 		''' Gets presenter notes for the given slide '''
-		return self.__kpf__["notes"]["slide-%d" % slide]
+		return self.__kpf__.kpf["notes"]["slide-%d" % slide]
 
 	def build_preview(self, event):
 		''' Returns the filename for the build preview for the
@@ -50,14 +57,18 @@ class Slideshow(object):
 		
 		return os.path.join(self.builds_dir, "build_%d.jpg" % event)
 
-	def find_next_still(self, event):
-		''' Finds the next event that will be displayed after the given event '''
+	def build_for_slide(self, slide):
+		''' Returns the first build for the given slide. '''
+		return self.first_builds[slide]
 
-		i = event + 1
-		timelines = self.__kpf__["eventTimelines"]
+	def find_still_from(self, event, direction = 1):
+		''' Finds the first still event in the specified direction. '''
+
+		i = event
+		timelines = self.__kpf__.kpf["eventTimelines"]
 		while timelines[i]["automaticPlay"] != 0 and i <= len(timelines):
-			i += 1
-		return 1
+			i += direction
+		return i
 
 
 def generate():
@@ -86,11 +97,28 @@ if __name__ == "__main__":
 	print >> sys.stderr, "Preparing builds: "
 	slideshow.prepare()
 
-	k = keynote_script()
+	k = keynote_script
 
 	# Go to given slide; show filename for still for where screen will stop.
+	SLIDE = 1
+	k.start_slide_show()
+	k.go_to_slide(SLIDE)
+	first_build = slideshow.build_for_slide(SLIDE)
+	k.next_build()
+	build_on_screen = slideshow.find_still_from(first_build + 1)
 
+	print >> sys.stderr, "You'll end up on build: ", build_on_screen
+	print >> sys.stderr, "Which looks like: ", slideshow.build_preview(build_on_screen)
 
 	raw_input("Press enter to proceed")
+
+	k.start_slide_show()
+	k.previous_build()
+	k.previous_build()
+	k.previous_build()
+	build_on_screen = build_on_screen - 3
+	print >> sys.stderr, "You'll end up on build: ", build_on_screen
+	print >> sys.stderr, "Which looks like: ", slideshow.build_preview(build_on_screen)
+
 
 	slideshow.obliterate()
