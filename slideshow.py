@@ -8,8 +8,17 @@ import sys
 
 class Slideshow(object):
 
+	def __init__(self, kpfdir):
+		self.__kpfdir__ = kpfdir
+		self.__kpf__ = kpfutil.Kpf(os.path.join(kpfdir, "kpf.json"))
+
+	def prepare(self):
+		builds_dir = os.path.join(self.__kpfdir__, "builds")
+		os.mkdir(builds_dir)
+		self.__kpf__.assemble_slides(builds_dir)
+
 	def obliterate(self):
-		pass
+		subprocess.call(["rm", "-rf", self.__kpfdir__])
 
 
 
@@ -22,14 +31,22 @@ def generate():
 	output = subprocess.check_output(["osascript", "export-kpf.applescript", out_dir])
 	output = output.strip()
 	if output == "0":
-		return Slideshow()
+		return Slideshow(out_dir)
 	else:
 		# FAIL.
 		return None
 
 
 if __name__ == "__main__":
+	print >> sys.stderr, "Exporting slideshow: "
 	slideshow = generate()
+
+	if slideshow == None:
+		print >> sys.stderr, "Failed to generate slideshow"
+		sys.exit(1)
+
+	print >> sys.stderr, "Preparing builds: "
+	slideshow.prepare()
 
 	raw_input("Press enter to proceed")
 
