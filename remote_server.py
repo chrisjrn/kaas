@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import keynote_script
+
 import BaseHTTPServer
 import subprocess
 
@@ -25,20 +27,16 @@ class Handlers(object):
 	''' Handlers for the various URLs '''
 
 	def next(self):
-		return slide_change("show-slide-next.applescript")
+		return keynote_script.next_slide()
 
 	def previous(self):
-		return slide_change("show-slide-previous.applescript")
+		return keynote_script.previous_slide()
 
 
 _HANDLERS = Handlers()
 
 def perform_request(command):
 	return _HANDLERS.__getattribute__(command)()
-
-def slide_change(script):
-	output = subprocess.check_output(["/usr/bin/osascript", script])
-	return output
 
 
 while True:
