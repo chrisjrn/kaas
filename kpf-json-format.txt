@@ -27,10 +27,10 @@ Textures:
 -- values: dicts, of format: {u'url': u'images-1/s106.b.jpeg', u'width': 1024, u'height': 768}
 
 EventTimelines:
-Describes how to assemble each slide.
+Describes the each build stage, including how to assemble the slide at each build stage.
 - List
 - Number of elements matches the number of builds + the number of initial slide states.
-- Each build is as per triggered by manual advance, or start/end of slide. Note the 'automaticPlay' key.
+- Each build is as per triggered by manual advance, or start of slide. Note the 'automaticPlay' key.
 
 	eventTimeLine element:
 	dict:
@@ -42,6 +42,13 @@ Describes how to assemble each slide.
 		hyperlinks <type 'list'>
 		textRegions <type 'list'>
 
-	eventInitialStates describe how to assemble the slide. Use the zIndex key if present to apply the order (0 -- lowest, increasing). If a state is listed as hidden, then don't display it. I *think* the order should be reliable.
+	eventInitialStates describe how to assemble the slide. Use the zIndex key if present to apply the order (0 -- lowest, increasing). If a state is listed as hidden, then don't display it. I *think* the order should be reliable. The Affine transform explains exactly where to put each texture on the page.
 
-	
+Notes:
+- JSON Dict, containing presenter notes for each slide
+- Keys formatted "slide-xxx" where xxx is the 1-indexed slide number
+
+NavigatorEvents:
+- List of dicts; dict keys: 'eventIndex' and 'eventName'
+- EventIndex gives the index into eventTimelines for the FIRST build stage of each slide.
+- eventName is "Slide xxx" where xxx is the 1-indexed slide number. If displaying a slide navigator, displaying build stage (navigatorEvents[n+1]['eventIndex'] - 1) will give the most built view for slide n.
