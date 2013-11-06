@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+
+import keynote_script
+import slideshow
+import StringIO
+
+
+#response, content_type, body = remote_handler.handle(self.path.split('/')[1:])
+
+def handle(path, show):
+
+	command_type = path[0]
+
+	return HANDLERS[command_type](path, show)
+
+
+
+def handle_go(path, show):
+	return (404, "text/plain", "lol")
+
+
+def handle_html(path, show):
+
+	if len(path) > 1:
+		next = path[1].strip()
+	else:
+		next = ""
+
+	if next == "start":
+		show.start_slide_show()
+
+	if next == "next":
+		show.next()
+
+	if next == "previous":
+		show.previous()
+
+	if next == "sync":
+		show.synchronise()
+
+	build = show.current_build
+	slide = show.current_slide
+
+	''' Display awful HTML template '''
+
+	format_args = { 
+		"image_url" : "/image/{}".format(build),
+		"notes" : sanitise_notes(show.notes(slide))
+	}
+	output = HTML_TEMPLATE.format(**format_args)
+
+	return (200, "text/html", output)
+
+
+
+def handle_image(path, show):
+
+	build = int(path[1])
+	filename = show.build_preview(build)
+
+	output = open(filename).read()
+
+	return (200, "image/jpeg", output)
+
+
+def sanitise_notes(notes):
+	io = StringIO.StringIO()
+	for i in notes:
+		if ord(i) < 128:
+			io.write(i)
+	return io.getvalue()
+
+HANDLERS = {
+	"go" : handle_go,
+	"html" : handle_html,
+	"image" : handle_image,
+}
+
+
+HTML_TEMPLATE = u'''
+<html>
+  <body>
+  	<h1>
+  	  <a href="/html/start">Start</a> 
+  	  - <a href="/html/next">Next</a> 
+  	  - <a href="/html/previous">Previous</a> 
+  	  - <a href="/html/sync">Sync</a>
+  	</h1>
+    <img src="{image_url}" />
+    <br/>
+    <textarea rows="10" cols="160">
+    {notes}
+    </textarea>
+  </body>
+
+</html>
+'''

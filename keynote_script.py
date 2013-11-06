@@ -9,7 +9,7 @@ def export_slide_show(to_directory):
 	return __execute__(command)
 
 def get_current_slide():
-	return __execute__("slide number of current slide of front slideshow").strip()
+	return int(__execute__("slide number of current slide of front slideshow").strip())
 
 def go_to_slide(slide):
 	return __execute__("jump to slide %d of front slideshow" % slide)
