@@ -45,7 +45,7 @@ def handle_html(path, show):
 
 	format_args = { 
 		"image_url" : "/image/{}".format(build),
-		"notes" : sanitise_notes(show.notes(slide))
+		"notes" : show.notes(slide)
 	}
 	output = HTML_TEMPLATE.format(**format_args)
 
@@ -77,7 +77,7 @@ HANDLERS = {
 }
 
 
-HTML_TEMPLATE = u'''
+HTML_TEMPLATE = '''
 <html>
   <body>
   	<h1>
@@ -95,3 +95,4 @@ HTML_TEMPLATE = u'''
 
 </html>
 '''
+HTML_TEMPLATE = unicode(HTML_TEMPLATE)
