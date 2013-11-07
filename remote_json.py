@@ -11,8 +11,8 @@ def handle(path, show):
 		status = 404
 		output = "No such path: " + "/".join(path)
 
-	output_ucode = json.dumps(output, ensure_ascii = False, indent = 2).encode("utf8")
-	return (status, "application/json", output_ucode)
+	output_ucode = json.dumps(output, ensure_ascii = False, indent = 2).encode("UTF-8")
+	return (status, "application/json; charset=UTF-8", output_ucode)
 
 
 class Handlers(object):
