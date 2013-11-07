@@ -49,7 +49,12 @@ class Slideshow(object):
 
 	def notes(self, slide):
 		''' Gets presenter notes for the given slide '''
-		return self.__kpf__.kpf["notes"]["slide-%d" % slide]
+		try:
+			return self.__kpf__.kpf["notes"]["slide-%d" % slide]
+		except KeyError:
+			# Slides without notes do not have a key in the notes
+			# dictionary.
+			return u""
 
 	def build_preview(self, event):
 		''' Returns the filename for the build preview for the
