@@ -27,3 +27,38 @@ class Handlers(object):
 			"first_builds" : self.show.first_builds
 		}
 		return info
+
+	def current_state(self, path):
+		''' Returns the current state of the slideshow in progress '''
+		info = {
+			"slide" : self.show.current_slide,
+			"build" : self.show.current_build,
+		}
+		return info
+
+	''' Commands for remote-controlling keynote itself '''
+
+	def next(self, path):
+		''' Shows the next slide, returns the current_state '''
+
+		self.show.next()
+		return self.current_state(path)
+
+	def previous(self, path):
+		''' Shows the previous slide, returns the current_state '''
+
+		self.show.previous()
+		return self.current_state(path)
+
+	def start(self, path):
+		''' Starts the slideshow, returns the current_state '''
+
+		self.show.start_slide_show()
+		return self.current_state(path)
+
+	def sync(self, path):
+		''' Syncs the server and the keynote slideshow, returns the current state '''
+
+		self.show.synchronise()
+		return self.current_state(path)
+
