@@ -4,9 +4,15 @@ import json
 
 def handle(path, show):
 
-	output = Handlers(show).handle(path[1], path)
+	status = 200
+	try:
+		output = Handlers(show).handle(path[1], path)
+	except AttributeError:
+		status = 404
+		output = "No such path: " + "/".join(path)
 
-	return (200, "application/json", json.dumps(output, ensure_ascii = False, indent = 2))
+	output_ucode = json.dumps(output, ensure_ascii = False, indent = 2).encode("utf8")
+	return (status, "application/json", output_ucode)
 
 
 class Handlers(object):
@@ -35,6 +41,17 @@ class Handlers(object):
 			"build" : self.show.current_build,
 		}
 		return info
+
+	def notes(self, path):
+		''' Returns notes for specific slide, or every slide if not specified '''
+		if len(path) >= 3 and path[2].strip() != "":
+			return self.show.notes(int(path[2]))
+		else:
+			notes = {}
+			for i in xrange(1, self.slideshow_info(path)["slide_count"] + 1):
+				notes[i] = self.show.notes(i)
+			return notes
+
 
 	''' Commands for remote-controlling keynote itself '''
 
