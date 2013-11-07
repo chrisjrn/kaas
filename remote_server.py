@@ -32,12 +32,13 @@ class RemoteHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		print >> self.wfile, exception
 
 def serve_forever():
-	while True:
-		try:
-			BaseHTTPServer.HTTPServer(('', 8000), RemoteHTTPRequestHandler).handle_request()
-		except KeyboardInterrupt:
-			show.obliterate()
-			return
+	server = BaseHTTPServer.HTTPServer(('', 8000), RemoteHTTPRequestHandler)
+	try:
+		server.serve_forever()
+	except KeyboardInterrupt:
+		server.shutdown()
+		show.obliterate()
+		return
 
 
 print >> sys.stderr, "Generating slideshow from frontmost keynote slideshow..."
