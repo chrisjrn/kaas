@@ -15,22 +15,21 @@ class RemoteHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 			response, content_type, body = remote_handler.handle(path, show)
 
 		except Exception as e:
-			print >> sys.stderr, e
-			self.fail()
-			return
+			self.fail(e)
+			raise e
 
 		self.send_response(response)
 		self.send_header("Content-Type", content_type)
 		self.end_headers()
 		self.wfile.write(body)
 
-	def fail(self):
+	def fail(self, exception):
 		self.send_response(500)
 		self.send_header("Content-Type", "text/plain")
 		self.end_headers()
 		#print >> self.wfile, self.path
 
-		print >> self.wfile, "ERROR"
+		print >> self.wfile, exception
 
 def serve_forever():
 	while True:

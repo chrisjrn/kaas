@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 import keynote_script
+import remote_json
 import slideshow
+
 import StringIO
 
 
@@ -11,7 +13,10 @@ def handle(path, show):
 
 	command_type = path[0]
 
-	return HANDLERS[command_type](path, show)
+	try:
+		return HANDLERS[command_type](path, show)
+	except KeyError:
+		return (404, "text/plain", "No such URL: " + "/".join(path))
 
 
 
@@ -28,14 +33,13 @@ def handle_html(path, show):
 
 	if next == "start":
 		show.start_slide_show()
-
-	if next == "next":
+	elif next == "next":
 		show.next()
 
-	if next == "previous":
+	elif next == "previous":
 		show.previous()
 
-	if next == "sync":
+	elif next == "sync":
 		show.synchronise()
 
 	build = show.current_build
@@ -50,6 +54,10 @@ def handle_html(path, show):
 	output = HTML_TEMPLATE.format(**format_args).encode("utf8")
 
 	return (200, "text/html; charset=utf-8", output)
+
+def handle_json(path, show):
+	return remote_json.handle(path, show)
+
 
 
 
@@ -74,6 +82,7 @@ HANDLERS = {
 	"go" : handle_go,
 	"html" : handle_html,
 	"image" : handle_image,
+	"json" : handle_json,
 }
 
 

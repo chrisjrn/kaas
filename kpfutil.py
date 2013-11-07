@@ -12,6 +12,9 @@ class Kpf(object):
 		self.kpfdir = os.path.dirname(filename) # The directory where the textures can be found
 		self.kpf = json.load(open(filename))
 
+	def raw_kpf(self):
+		return self.kpf
+
 	def assemble_slides(self, output_directory):
 		assemble_slides(self, output_directory)
 

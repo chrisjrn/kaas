@@ -19,6 +19,9 @@ class Slideshow(object):
 
 		self.build_count = len(self.__kpf__.kpf["eventTimelines"])
 
+	def kpf(self):
+		return self.__kpf__
+
 	''' Lifecycle methods for slideshow '''
 
 	def prepare(self):
