@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.6
 
+import hashlib
 import json
 import sys
 import os
@@ -20,10 +21,20 @@ class Kpf(object):
 
     def __init__(self, filename):
         self.kpfdir = os.path.dirname(filename) # The directory where the textures can be found
-        self.kpf = json.load(open(filename))
+
+        kpfjson  = open(filename).read()
+        self.kpf = json.loads(kpfjson)
+
+        h = hashlib.sha256()
+        h.update(kpfjson)
+        self.hash = h.hexdigest()
+
 
     def raw_kpf(self):
         return self.kpf
+
+    def kpf_hash(self):
+        return self.hash
 
     def assemble_slides(self, output_directory):
         assemble_slides(self, output_directory)

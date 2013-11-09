@@ -30,7 +30,8 @@ class Handlers(object):
         info = {
             "slide_count" : kpf["slideCount"],
             "build_count" : len(kpf["eventTimelines"]),
-            "first_builds" : self.show.first_builds
+            "first_builds" : self.show.first_builds,
+            "hash" : self.show.kpf().kpf_hash(),
         }
         return info
 
@@ -39,6 +40,7 @@ class Handlers(object):
         info = {
             "slide" : self.show.current_slide,
             "build" : self.show.current_build,
+            "hash" : self.show.kpf().kpf_hash(),
         }
         return info
 
