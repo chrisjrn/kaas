@@ -4,30 +4,30 @@ import pipes
 import subprocess
 
 def export_slide_show(to_directory):
-	''' Outputs a KPF at to_directory '''
-	command = 'export front slideshow to "%s" as KPF_RAW' % (pipes.quote(to_directory))
-	return __execute__(command)
+    ''' Outputs a KPF at to_directory '''
+    command = 'export front slideshow to "%s" as KPF_RAW' % (pipes.quote(to_directory))
+    return __execute__(command)
 
 def get_current_slide():
-	return int(__execute__("slide number of current slide of front slideshow").strip())
+    return int(__execute__("slide number of current slide of front slideshow").strip())
 
 def go_to_slide(slide):
-	return __execute__("jump to slide %d of front slideshow" % slide)
+    return __execute__("jump to slide %d of front slideshow" % slide)
 
 def next_build():
-	return __execute__("show next")
+    return __execute__("show next")
 
 def previous_build():
-	return __execute__("show previous")
+    return __execute__("show previous")
 
 def start_slide_show():
-	return __execute__("start")
+    return __execute__("start")
 
 def __execute__(command):
-	''' Gets keynote to execute the given applescript command '''
-	to_run = 'tell application "Keynote" to %s' % command
+    ''' Gets keynote to execute the given applescript command '''
+    to_run = 'tell application "Keynote" to %s' % command
 
-	return check_output(["osascript", "-e", to_run])
+    return check_output(["osascript", "-e", to_run])
 
 
 def __check_output__(*popenargs, **kwargs):
@@ -65,6 +65,6 @@ def __check_output__(*popenargs, **kwargs):
     return output
 
 if "check_output" not in dir(subprocess):
-	check_output = __check_output__
+    check_output = __check_output__
 else:
-	check_output = subprocess.check_output
+    check_output = subprocess.check_output
