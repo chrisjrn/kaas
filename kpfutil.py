@@ -16,10 +16,6 @@ from AppKit import NSPoint
 from AppKit import NSSize
 from AppKit import NSZeroRect
 
-
-#from PIL import Image
-
-
 class Kpf(object):
 
 	def __init__(self, filename):
