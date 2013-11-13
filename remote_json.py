@@ -89,3 +89,14 @@ class Handlers(object):
         self.show.synchronise()
         return self.current_state(path)
 
+    ''' Method for interrogating the state of Keynote itself '''
+
+    def monitor(self, path):
+        out = { 
+            "current_slide" : self.show.keynote_current_slide(),
+            "is_playing" : self.show.keynote_is_playing(),
+        }
+
+        return out
+
+

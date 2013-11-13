@@ -96,7 +96,7 @@ class Slideshow(object):
     
     def keynote_current_slide(self):
         ''' Asks keynote for its current slide '''
-        current_slide = keynote_script.current_slide()
+        current_slide = keynote_script.get_current_slide()
         return int(current_slide)
 
     ''' Methods for altering the state of the slideshow '''
