@@ -89,6 +89,16 @@ class Slideshow(object):
             i += direction
         return i
 
+    def keynote_is_playing(self):
+        ''' Asks keynote if it is playing a slideshow '''
+        is_playing = keynote_script.slideshow_is_playing().strip()
+        return True if is_playing == "true" else False if is_playing == "false" else None
+    
+    def keynote_current_slide(self):
+        ''' Asks keynote for its current slide '''
+        current_slide = keynote_script.current_slide()
+        return int(current_slide)
+
     ''' Methods for altering the state of the slideshow '''
 
     def start_slide_show(self):
@@ -99,6 +109,15 @@ class Slideshow(object):
 
         self.current_slide = slide
         self.current_build = self.build_for_slide(slide)
+
+    def start_or_resume(self):
+        try:
+            keynote_script.resume_slide_show()
+        except:
+            self.start_slide_show()
+
+    def pause(self):
+        keynote_script.pause_slide_show()
 
     def synchronise(self):
         ''' Resets the slideshow to the current slide, synchronsises

@@ -17,8 +17,21 @@ def go_to_slide(slide):
 def next_build():
     return __execute__("show next")
 
+def pause_slide_show():
+    return __execute__("pause slideshow")
+
 def previous_build():
     return __execute__("show previous")
+
+def resume_slide_show():
+    return __execute__("resume slideshow")
+
+def slideshow_is_playing():
+    return __execute__("playing")
+
+def slideshow_path():
+    return __execute__("path of front slideshow")
+
 
 def start_slide_show():
     return __execute__("start")

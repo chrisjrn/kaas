@@ -70,10 +70,18 @@ class Handlers(object):
         return self.current_state(path)
 
     def start(self, path):
-        ''' Starts the slideshow, returns the current_state '''
+        ''' Starts/resumes the slideshow, returns the current_state '''
 
-        self.show.start_slide_show()
+        self.show.start_or_resume()
         return self.current_state(path)
+
+    def pause(self, path):
+        ''' Pauses the slideshow, returns the current_state '''
+
+        self.show.pause()
+        return self.current_state(path)
+
+
 
     def sync(self, path):
         ''' Syncs the server and the keynote slideshow, returns the current state '''
