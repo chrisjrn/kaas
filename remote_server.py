@@ -83,7 +83,7 @@ class RemoteHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         - The Digest has not been used to authenticate a request on
         this server.
         - The Digest is equivalent to the digest of:
-        self.command + '\n' + self.path + '\n' + X-Kaas-Timestamp
+        self.command + '\n' + self.path + '\n' + X-Kaas-Nonce
         (each encoded as ASCII)
         '''
 
