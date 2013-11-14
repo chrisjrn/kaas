@@ -12,7 +12,6 @@ import socket
 import subprocess
 import sys
 import threading
-import time
 from email import utils
 
 ''' Code for running the keynote remote server. This is pretty inherently
@@ -29,6 +28,7 @@ class ServerState(object):
     def __init__(self):
         self.show = None # No show until one is generated.
         self.server = None # No server yet.
+        self.hashes = set()
 
 STATE = ServerState()
 KEY = ""
@@ -77,34 +77,32 @@ class RemoteHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         ''' Verifies that a request is authenticated. To do this,
         we provide two headers:
         X-Kaas-Digest: the hmac-sha256 hex digest of the request
-        X-Kass-Timestamp: the RFC822 timestamp of the request, as 
-        determined by the client.
+        X-Kass-Nonce: a set of random characters to salt the hash.
 
         A request is authenticated if and only if:
-        - The Timestamp header is within 30 seconds of the time as
-        determined by the server.
+        - The Digest has not been used to authenticate a request on
+        this server.
         - The Digest is equivalent to the digest of:
         self.command + '\n' + self.path + '\n' + X-Kaas-Timestamp
         (each encoded as ASCII)
         '''
 
-        timestamp = self.headers["X-Kaas-Timestamp"]
+        nonce = self.headers["X-Kaas-Nonce"]
+        request_digest = self.headers["X-Kaas-Digest"]
 
-        tsdate = utils.parsedate(timestamp)
-
-        diff = abs(time.time() - time.mktime(tsdate))
-
-        if diff > 30:
+        if request_digest in STATE.hashes:
             return False
+
+        STATE.hashes.add(request_digest)
 
         mac = hmac.new(KEY, digestmod = hashlib.sha256)
         mac.update(self.command)
         mac.update("\n")
         mac.update(self.path)
         mac.update("\n")
-        mac.update(timestamp)
+        mac.update(nonce)
 
-        return mac.hexdigest() == self.headers["X-Kaas-Digest"]
+        return mac.hexdigest() == request_digest 
 
 def create_server():
     #socket.error: [Errno 48] Address already in use
