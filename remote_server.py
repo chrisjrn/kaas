@@ -4,12 +4,16 @@ import remote_handler
 import slideshow
 
 import BaseHTTPServer
+import hashlib
+import hmac
+import random
 import SocketServer
 import socket
 import subprocess
 import sys
 import threading
-
+import time
+from email import utils
 
 ''' Code for running the keynote remote server. This is pretty inherently
 singleton at the moment, and it doesn't make much sense to do otherwise --
@@ -18,6 +22,8 @@ keynote can only display a single slide show at once anyway.
 Exporting a new show will will disable the server for a while, but update
 will happen in place '''
 
+AUTHENTICATE = True # HTML will not work if authentication is off.
+
 class ServerState(object):
     
     def __init__(self):
@@ -25,6 +31,7 @@ class ServerState(object):
         self.server = None # No server yet.
 
 STATE = ServerState()
+KEY = ""
 
 class KeymoteHTTPServer(BaseHTTPServer.HTTPServer):
     pass
@@ -32,6 +39,11 @@ class KeymoteHTTPServer(BaseHTTPServer.HTTPServer):
 class RemoteHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_GET(self):
+
+        if not self.authenticate():
+            self.auth_fail()
+            return
+
         try:
             path = self.path.split('/')[1:]
             response, content_type, body = remote_handler.handle(path, STATE.show)
@@ -52,6 +64,47 @@ class RemoteHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         #print >> self.wfile, self.path
 
         print >> self.wfile, exception
+
+    def auth_fail(self):
+        self.send_response(400)
+        self.send_header("Content-Type", "text/plain")
+        self.end_headers()
+
+        print >> self.wfile, "Request was not authenticated when it should have been."
+
+
+    def authenticate(self):
+        ''' Verifies that a request is authenticated. To do this,
+        we provide two headers:
+        X-Kaas-Digest: the hmac-sha256 hex digest of the request
+        X-Kass-Timestamp: the RFC822 timestamp of the request, as 
+        determined by the client.
+
+        A request is authenticated if and only if:
+        - The Timestamp header is within 30 seconds of the time as
+        determined by the server.
+        - The Digest is equivalent to the digest of:
+        self.command + '\n' + self.path + '\n' + X-Kaas-Timestamp
+        (each encoded as ASCII)
+        '''
+
+        timestamp = self.headers["X-Kaas-Timestamp"]
+
+        tsdate = utils.parsedate(timestamp)
+
+        diff = abs(time.time() - time.mktime(tsdate))
+
+        if diff > 30:
+            return False
+
+        mac = hmac.new(KEY, digestmod = hashlib.sha256)
+        mac.update(self.command)
+        mac.update("\n")
+        mac.update(self.path)
+        mac.update("\n")
+        mac.update(timestamp)
+
+        return mac.hexdigest() == self.headers["X-Kaas-Digest"]
 
 def create_server():
     #socket.error: [Errno 48] Address already in use
@@ -84,6 +137,19 @@ def set_show():
     STATE.show = None # Cannot serve anything for now
     STATE.show = slideshow.generate()
 
+def generate_key():
+    ''' Generates a random PIN number to authenticate
+    requests with. A PIN is a 6-digit number with at least
+    3 unique digits. '''
+
+    global KEY
+
+    k = ""
+    while len(set(k)) < 3:
+        k = str(random.randint(100000, 999999))
+
+    KEY = k
+
 def prepare_show():
     if STATE.show is not None:
         STATE.show.prepare()
@@ -105,9 +171,11 @@ def main():
     set_show()
     print >> sys.stderr, "Generating build previews..."
     prepare_show()
+    generate_key()
     print >> sys.stderr, "Starting server..."
     address = start_serving()
     print >> sys.stderr, "Now serving on: http://%s:%d" % (address)
+    print >> sys.stderr, "The PIN number is: %s" % (KEY)
 
     try:
         while True:
