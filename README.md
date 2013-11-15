@@ -19,7 +19,7 @@ It currently does not support Keynote 6 (2013 release), due to Keynote 6's
 lack of a scripting interface.
 
 This is the server component of Keymote, my Android Keynote Remote, which can
-be found on the (Play Store)[https://play.google.com/store/apps/details?id=net.noogz.keymote].
+be found on the [Play Store](https://play.google.com/store/apps/details?id=net.noogz.keymote).
 
 
 Basic use -- Command Line
