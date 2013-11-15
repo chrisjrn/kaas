@@ -1,5 +1,33 @@
 #!/usr/bin/env python2.6
 
+# Copyright 2013 Christopher Neugebauer and contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+''' HTTP server for KAAS. Provides the basic HTTP server implementation;
+authentication via HMAC for GET requests. 
+
+At the moment the code is inherently singleton at the moment, and it 
+doesn't make much sense to do otherwise -- keynote can only display a 
+single slide show at once anyway.
+
+Could stand to have the external server interface tidied up into a single 
+class.
+
+Exporting a new show will will disable the server for a while, but update
+will happen in place.
+'''
+
 import remote_handler
 import slideshow
 
@@ -14,12 +42,7 @@ import sys
 import threading
 from email import utils
 
-''' Code for running the keynote remote server. This is pretty inherently
-singleton at the moment, and it doesn't make much sense to do otherwise --
-keynote can only display a single slide show at once anyway.
-
-Exporting a new show will will disable the server for a while, but update
-will happen in place '''
+''' '''
 
 
 ''' Set AUTHENTICATE to False to enable the HTML interface. '''
