@@ -11,6 +11,9 @@ slide show.
 
 It can also send notes and build previews to client devices.
 
+This functionality is also exposed in a basic HTML client, which will be 
+extended and documented in the future.
+
 The server is written in Python 2.6+, and has a dependency on PyObjC & AppKit.
 Note that the default interpreter is Python 2.6 as this provices PyObjC 
 bindings on most Mac OS X installations with no external dependencies.
@@ -19,7 +22,8 @@ It currently does not support Keynote 6 (2013 release), due to Keynote 6's
 lack of a scripting interface.
 
 This is the server component of Keymote, my Android Keynote Remote, which can
-be found on the [Play Store](https://play.google.com/store/apps/details?id=net.noogz.keymote).
+be found on the [Play Store](https://play.google.com/store/apps/details?id=net.noogz.keymote)
+(restricted to approved testing users only).
 
 
 Basic use -- Command Line

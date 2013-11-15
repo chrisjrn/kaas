@@ -21,7 +21,9 @@ keynote can only display a single slide show at once anyway.
 Exporting a new show will will disable the server for a while, but update
 will happen in place '''
 
-AUTHENTICATE = True # HTML will not work if authentication is off.
+
+''' Set AUTHENTICATE to False to enable the HTML interface. '''
+AUTHENTICATE = True # HTML will not work if authentication is enabled.
 
 class ServerState(object):
     
