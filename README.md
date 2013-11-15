@@ -54,6 +54,16 @@ If you want to present from a different deck of slides, you will need to quit
 the server (Ctrl+C), and restart it. The ability to change slide decks is a
 planned feature.
 
+### Troubleshooting
+
+If you get an `ImportError: No module named AppKit` message; try running the following:
+
+    $ sudo easy_install-2.6 pyobjc-framework-Cocoa
+
+And running 
+
+    $ python2.6 remote_server.py
+
 
 Basic Use -- GUI
 ----------------
