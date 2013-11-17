@@ -125,6 +125,9 @@ atexit.register(stop_serving)
 
 root = Tk()
 app = Application(master=root)
+
+app.master.title("KAAS Server")
+
 app.mainloop()
 root.destroy()
 
