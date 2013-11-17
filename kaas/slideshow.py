@@ -23,7 +23,8 @@ import sys
 
 class Slideshow(object):
 
-    def __init__(self, kpfdir):
+    def __init__(self, path, kpfdir):
+        self.__path__ = path
         self.__kpfdir__ = kpfdir
         self.__kpf__ = kpfutil.Kpf(os.path.join(kpfdir, "kpf.json"))
 
@@ -32,6 +33,11 @@ class Slideshow(object):
         self.current_slide = 1 # Slides are 1-indexed
 
         self.build_count = len(self.__kpf__.kpf["eventTimelines"])
+
+    def path(self):
+        ''' Returns the path to the keynote file used to generate this 
+        Slideshow object '''
+        return self.__path__
 
     def kpf(self):
         return self.__kpf__
@@ -105,7 +111,7 @@ class Slideshow(object):
 
     def keynote_is_playing(self):
         ''' Asks keynote if it is playing a slideshow '''
-        is_playing = keynote_script.slideshow_is_playing().strip()
+        is_playing = keynote_script.slide_show_is_playing().strip()
         return True if is_playing == "true" else False if is_playing == "false" else None
     
     def keynote_current_slide(self):
@@ -173,10 +179,11 @@ def generate():
 
     out_dir = os.tmpnam()
     print >> sys.stderr, "Output: ", out_dir
+    path = keynote_script.slide_show_path()
     output = keynote_script.export_slide_show(out_dir)
     output = output.strip()
     if output == "":
-        return Slideshow(out_dir)
+        return Slideshow(path, out_dir)
     else:
         # FAIL.
         return None

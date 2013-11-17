@@ -19,31 +19,109 @@ remote_server. The intention is to make it easy to start up a server and know
 what the important information is.
 '''
 
+import atexit 
+import os
+import sys
+
 from Tkinter import *
+
+import remote_server
 
 
 class Application(Frame):
-    def say_hi(self):
-        print "hi there, everyone!"
-
-    def createWidgets(self):
-        self.QUIT = Button(self)
-        self.QUIT["text"] = "QUIT"
-        self.QUIT["fg"]   = "red"
-        self.QUIT["command"] =  self.quit
-
-        self.QUIT.pack({"side": "left"})
-
-        self.hi_there = Button(self)
-        self.hi_there["text"] = "Hello",
-        self.hi_there["command"] = self.say_hi
-
-        self.hi_there.pack({"side": "left"})
 
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.pack()
         self.createWidgets()
+
+    def createWidgets(self):
+
+        # Create top-level frames
+
+        self.path_frame = Frame(master=self)
+        self.path_frame.pack(side="top", fill="x")
+
+        self.server_frame = Frame(master=self)
+        self.server_frame.pack(side="top", fill="x")
+
+        self.pin_frame = Frame(master=self)
+        self.pin_frame.pack(side="top", fill="x")
+
+        self.button_frame = Frame(master=self)
+        self.button_frame.pack(side="top", fill="x")
+
+        # Shows where the server currently is
+
+        self.path_label = Label(master=self.path_frame)
+        self.path_label["text"] = "Press 'start serving' to begin."
+        self.path_label.pack(side = "left")
+
+        self.path_value = Label(master=self.path_frame)
+        self.path_value["text"] = ""
+        self.path_value.pack(side = "right")
+        self.path_value["text"] = ""
+
+        # Shows where the server currently is
+
+        self.server_label = Label(master=self.server_frame)
+        self.server_label["text"] = ""
+        self.server_label.pack(side = "left")
+
+        self.server_address = Label(master=self.server_frame)
+        self.server_address["text"] = ""
+        self.server_address.pack(side = "right")
+        self.server_address["text"] = ""
+
+
+        # Shows what the PIN number currently is
+
+        self.pin_label = Label(master=self.pin_frame)
+        self.pin_label["text"] = ""
+        self.pin_label.pack(side = "left")
+
+        self.pin_value = Label(master=self.pin_frame)
+        self.pin_value["text"] = ""
+        self.pin_value.pack(side = "right")
+
+
+        # Buttons
+
+        self.start_serving_button = Button(master=self.button_frame)
+        self.start_serving_button["text"] = "Start serving"
+        self.start_serving_button["command"] = self.start_serving
+        self.start_serving_button.pack(side = "top", fill = "x")
+
+    def start_serving(self):
+
+        self.prepare_show()
+
+        pin = remote_server.generate_key()
+        print >> sys.stderr, "Starting server..."
+        address = remote_server.start_serving()
+
+        self.server_label["text"] = "Now serving at: "
+        self.server_address["text"] = "http://%s:%d" % address
+        self.pin_label["text"] = "PIN number: "
+        self.pin_value["text"] = pin
+
+        self.start_serving_button["text"] = "Load new slideshow"
+        self.start_serving_button["command"] = self.prepare_show
+
+    def prepare_show(self):
+        print >> sys.stderr, "Exporting slideshow..."
+        remote_server.set_show()
+        print >> sys.stderr, "Generating build previews..."
+        remote_server.prepare_show()
+        self.path_label["text"] = "Using slideshow: "
+        self.path_value["text"] = os.path.basename(remote_server.get_show().path())
+
+
+def stop_serving():
+    remote_server.stop_serving()
+
+atexit.register(stop_serving)
+
 
 root = Tk()
 app = Application(master=root)

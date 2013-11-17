@@ -160,6 +160,9 @@ def set_show():
     STATE.show = None # Cannot serve anything for now
     STATE.show = slideshow.generate()
 
+def get_show():
+    return STATE.show
+
 def generate_key():
     ''' Generates a random PIN number to authenticate
     requests with. A PIN is a 6-digit number with at least
@@ -172,6 +175,7 @@ def generate_key():
         k = str(random.randint(100000, 999999))
 
     KEY = k
+    return k
 
 def prepare_show():
     if STATE.show is not None:
@@ -187,7 +191,8 @@ def start_serving():
     return address
 
 def stop_serving():
-    STATE.server.shutdown()
+    if STATE.server is not None:
+        STATE.server.shutdown()
 
 def main():
     print >> sys.stderr, "Generating export from frontmost keynote slideshow..."

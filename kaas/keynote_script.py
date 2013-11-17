@@ -41,11 +41,11 @@ def previous_build():
 def resume_slide_show():
     return __execute__("resume slideshow")
 
-def slideshow_is_playing():
+def slide_show_is_playing():
     return __execute__("playing")
 
-def slideshow_path():
-    return __execute__("path of front slideshow")
+def slide_show_path():
+    return __execute__("path of front slideshow").strip()
 
 def start_slide_show():
     return __execute__("start")
