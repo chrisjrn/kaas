@@ -35,7 +35,7 @@ file you want to present from is front-most.
 
 To load up the server, run
 
-    $ ./remote_server.py
+    $ ./kaas/remote_server.py
 
 The server will output the following:
 
@@ -62,13 +62,15 @@ If you get an `ImportError: No module named AppKit` message; try running the fol
 
 And running 
 
-    $ python2.6 remote_server.py
+    $ python2.6 kaas/remote_server.py
 
 
 Basic Use -- GUI
 ----------------
 
-A graphical user interface for running the server is planned.
+From your command line, run
+
+    $ ./kaas/remote-gui.py
 
 
 JSON API Documentation
@@ -80,19 +82,22 @@ Once API documentation is ready, it'll be available at JSON_API.md.
 App & Module Structure
 ----------------------
 
+### `kaas/`
+
 - keynote_script.py -- Low-level python-to-Applescript bridge for keynote, 
   exposes functions needed for controlling keynote.
 - kpfutil.py -- Low-level tools for manipulating Keynote's JSON export format, 
   including assembling build previews from its degenerate textures. See 
   kpf-json-format.txt for my notes on how the format works.
 - remote_handler.py -- The GET request handler for the server.
+- remote_gui.py -- TK-based GUI for KAAS.
 - remote_json.py -- Handler for JSON API calls.
 - remote_server.py -- The HTTP server for KAAS. This also handles authentication
   of requests before passing them off to the handler.
 - slideshow.py -- A higher-level API for manipulating KPF files and controlling
   keynote than either kpfutil.py or keynote_script.py respectively.
 
-Also of interest:
+### `docs/`:
 
 - kpf-json.format.txt -- Vague notes I wrote when trying to understand the KPF
   (Keynote JSON) format that KAAS uses to understand the presentation being 
