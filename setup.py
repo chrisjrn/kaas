@@ -8,18 +8,28 @@ Usage:
 from setuptools import setup
 
 APP = ['./kaas/remote_gui.py']
-DATA_FILES = ['./kaas/keynote_script.py',
- './kaas/kpfutil.py',
- './kaas/remote_gui.py',
- './kaas/remote_handler.py',
- './kaas/remote_json.py',
- './kaas/remote_server.py',
- './kaas/slideshow.py']
-OPTIONS = {'argv_emulation': False, 'includes': 'Tkinter,AppKit'}
+
+DATA_FILES = [
+    './kaas/keynote_script.py',
+     './kaas/kpfutil.py',
+     './kaas/remote_gui.py',
+     './kaas/remote_handler.py',
+     './kaas/remote_json.py',
+     './kaas/remote_server.py',
+     './kaas/slideshow.py'
+]
+
+OPTIONS = {
+    'argv_emulation': False, 
+    'includes': 'Tkinter,AppKit', 
+    'optimize' : '2'
+}
 
 setup(
-    app=APP,
-    data_files=DATA_FILES,
-    options={'py2app': OPTIONS},
+    app = APP,
+    data_files = DATA_FILES,
+    options = {'py2app': OPTIONS},
+    name = "KAAS Server",
+    version = "0.0.1",
     setup_requires=['py2app'],
 )
