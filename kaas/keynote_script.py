@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import os
 import pipes
 import subprocess
 
@@ -24,7 +24,7 @@ def export_slide_show(to_directory):
     return __execute__(command)
 
 def get_current_slide():
-    return int(__execute__("slide number of current slide of front slideshow").strip())
+    return int(__execute__("slide number of current slide of front slideshow"))
 
 def go_to_slide(slide):
     return __execute__("jump to slide %d of front slideshow" % slide)
@@ -45,16 +45,20 @@ def slide_show_is_playing():
     return __execute__("playing")
 
 def slide_show_path():
-    return __execute__("path of front slideshow").strip()
+    return __execute__("path of front slideshow")
 
 def start_slide_show():
     return __execute__("start")
 
 def __execute__(command):
-    ''' Gets keynote to execute the given applescript command '''
-    to_run = 'tell application "Keynote" to %s' % command
+    return __execute_with_app__("Keynote", command)
 
-    return check_output(["osascript", "-e", to_run])
+def __execute_with_app__(app, command):
+    ''' Gets provided app to execute the given applescript command '''
+    to_run = 'tell application "%s" to %s' % (app, command)
+
+    return check_output(["osascript", "-e", to_run]).strip()
+
 
 
 def __check_output__(*popenargs, **kwargs):
@@ -91,7 +95,37 @@ def __check_output__(*popenargs, **kwargs):
         raise subprocess.CalledProcessError(retcode, cmd)
     return output
 
+def __scan_for_apps__():
+    ''' Looks for installations of Keynote, so that we can offer an interface
+    to the multiple versions of Keynote on the machine ''' 
+    def walk_selective(dir, found):
+        if not os.path.isdir(dir):
+            return
+
+        files = os.listdir(dir)
+
+        for f in files:
+            ff = os.path.join(dir, f)
+            if f.endswith("Keynote.app"):
+                found.append(ff)
+            elif f.endswith(".app"):
+                pass
+            else:
+                walk_selective(ff, found)
+        return found
+    candidates = walk_selective("/Applications", [])
+
+    keynotes = {}
+
+    for candidate in candidates:
+        ver = __execute_with_app__(candidate, "version")
+        keynotes[ver] = candidate
+
+    return keynotes
+
 if "check_output" not in dir(subprocess):
     check_output = __check_output__
 else:
     check_output = subprocess.check_output
+
+INSTALLED_VERSIONS = __scan_for_apps__()
