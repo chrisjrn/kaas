@@ -34,12 +34,27 @@ COMMANDS["5.0"] = {
     'start_slide_show' : 'start',
 }
 
-def select_version(version = None):
+def select_version(version = None, excluded = set()):
     global COMMANDS_VERSION
     global APPLICATION_VERSION
+
+    useable_versions = set(INSTALLED_VERSIONS) - excluded
+
     if version == None:
-        select_version(max(INSTALLED_VERSIONS))
+        version_to_try = max(useable_versions)
+        try:
+            select_version(version_to_try)
+            return
+        except KeyError:
+            new_excluded = excluded | set([version_to_try])
+            available = useable_versions - new_excluded
+            if len(available) > 0:
+                select_version(None, new_excluded)
+                return
+        raise KeyError("No suitable version of Keynote installed")
+
     else:
+        _version = version
         version = __version_tuple__(version)
         
         installs_matching_major_version = (j for j in 
