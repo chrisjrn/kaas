@@ -18,48 +18,82 @@ import os
 import pipes
 import subprocess
 
+''' AppleScript commands for given minimum versions of Keynote '''
+COMMANDS = {}
+
+COMMANDS["5.0"] = {
+    'export_slide_show' : 'export front slideshow to "%s" as KPF_RAW',
+    'get_current_slide' : 'slide number of current slide of front slideshow', 
+    'go_to_slide' : 'jump to slide %d of front slideshow',
+    'next_build' : 'show next',
+    'pause_slide_show' : 'pause slideshow',
+    'previous_build' : 'show previous',
+    'resume_slide_show' : 'resume slideshow',
+    'slide_show_is_playing' : 'playing',
+    'slide_show_path' : 'path of front slideshow',
+    'start_slide_show' : 'start',
+}
+
+def select_version(version = None):
+    global COMMANDS_VERSION
+    global APPLICATION_VERSION
+    if version == None:
+        select_version(max(INSTALLED_VERSIONS))
+    else:
+        version = __version_tuple__(version)
+        
+        installs_matching_major_version = (j for j in 
+            (__version_tuple__(i) for i in COMMANDS) if j[0] == version[0])
+
+        for install in installs_matching_major_version:
+            version_greater_than_install = (i >= j for i,j in zip(version, install))
+            if False not in version_greater_than_install:
+                COMMANDS_VERSION = ".".join(str(i) for i in install)
+                APPLICATION_VERSION = ".".join(str(i) for i in version)
+                return
+
+        raise KeyError("No keynote app found for specified version")
+
 def export_slide_show(to_directory):
     ''' Outputs a KPF at to_directory '''
-    command = 'export front slideshow to "%s" as KPF_RAW' % (pipes.quote(to_directory))
+    command = COMMANDS[COMMANDS_VERSION]['export_slide_show'] % (pipes.quote(to_directory))
     return __execute__(command)
 
 def get_current_slide():
-    return int(__execute__("slide number of current slide of front slideshow"))
+    return int(__execute__(COMMANDS[COMMANDS_VERSION]['get_current_slide']))
 
 def go_to_slide(slide):
-    return __execute__("jump to slide %d of front slideshow" % slide)
+    return __execute__(COMMANDS[COMMANDS_VERSION]['go_to_slide'] % slide)
 
 def next_build():
-    return __execute__("show next")
+    return __execute__(COMMANDS[COMMANDS_VERSION]['next_build'])
 
 def pause_slide_show():
-    return __execute__("pause slideshow")
+    return __execute__(COMMANDS[COMMANDS_VERSION]['pause_slide_show'])
 
 def previous_build():
-    return __execute__("show previous")
+    return __execute__(COMMANDS[COMMANDS_VERSION]['previous_build'])
 
 def resume_slide_show():
-    return __execute__("resume slideshow")
+    return __execute__(COMMANDS[COMMANDS_VERSION]['resume_slide_show'])
 
 def slide_show_is_playing():
-    return __execute__("playing")
+    return __execute__(COMMANDS[COMMANDS_VERSION]['slide_show_is_playing'])
 
 def slide_show_path():
-    return __execute__("path of front slideshow")
+    return __execute__(COMMANDS[COMMANDS_VERSION]['slide_show_path'])
 
 def start_slide_show():
-    return __execute__("start")
+    return __execute__(COMMANDS[COMMANDS_VERSION]['start_slide_show'])
 
 def __execute__(command):
-    return __execute_with_app__("Keynote", command)
+    return __execute_with_app__(INSTALLED_VERSIONS[APPLICATION_VERSION], command)
 
 def __execute_with_app__(app, command):
     ''' Gets provided app to execute the given applescript command '''
     to_run = 'tell application "%s" to %s' % (app, command)
 
     return check_output(["osascript", "-e", to_run]).strip()
-
-
 
 def __check_output__(*popenargs, **kwargs):
     r"""Run command with arguments and return its output as a byte string.
@@ -123,9 +157,15 @@ def __scan_for_apps__():
 
     return keynotes
 
+def __version_tuple__(version):
+    return tuple(int(i) for i in str(version).split("."))
+
+
 if "check_output" not in dir(subprocess):
     check_output = __check_output__
 else:
     check_output = subprocess.check_output
 
 INSTALLED_VERSIONS = __scan_for_apps__()
+
+select_version()
