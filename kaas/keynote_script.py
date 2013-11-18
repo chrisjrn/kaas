@@ -24,7 +24,7 @@ COMMANDS = {}
 COMMANDS["5.0"] = {
     'export_slide_show' : 'export front slideshow to "%s" as KPF_RAW',
     'get_current_slide' : 'slide number of current slide of front slideshow', 
-    'go_to_slide' : 'jump to slide %d of front slideshow',
+    'go_to_slide' : 'show slide %d of front slideshow',
     'next_build' : 'show next',
     'pause_slide_show' : 'pause slideshow',
     'previous_build' : 'show previous',
