@@ -27,13 +27,13 @@ class Slideshow(object):
         self.__path__ = path
         self.__kpfdir__ = kpfdir
         # TODO Make this load from most appropriate KPF version
-        self.__kpf__ = kpfutil.KpfV5(os.path.join(kpfdir, "kpf.json"))
+        self.__kpf__ = kpfutil.KpfV5(kpfdir)
 
         # Variables for guessing where keynote is at the moment. Lol.
         self.current_build = 0 # Builds are 0-indexed
         self.current_slide = 1 # Slides are 1-indexed
 
-        self.build_count = len(self.__kpf__.kpf["eventTimelines"])
+        self.build_count = self.__kpf__.build_count()
 
     def path(self):
         ''' Returns the path to the keynote file used to generate this 
@@ -55,10 +55,9 @@ class Slideshow(object):
         
         self.first_builds = {}
         self.slides_by_first_event = {}
-        for item in self.__kpf__.kpf["navigatorEvents"]:
-            slide = int(item["eventName"].split()[-1]) # Slide number. Yuck
-            self.first_builds[slide] = item["eventIndex"]
-            self.slides_by_first_event[item["eventIndex"]] = slide
+        for build, slide in self.__kpf__.navigator_events().items():
+            self.first_builds[slide] = build
+            self.slides_by_first_event[build] = slide
 
         self.prepared = True
         self.builds_dir = builds_dir
@@ -73,12 +72,7 @@ class Slideshow(object):
 
     def notes(self, slide):
         ''' Gets presenter notes for the given slide '''
-        try:
-            return self.__kpf__.kpf["notes"]["slide-%d" % slide]
-        except KeyError:
-            # Slides without notes do not have a key in the notes
-            # dictionary.
-            return u""
+        return self.__kpf__.notes(slide)
 
     def build_preview(self, event):
         ''' Returns the filename for the build preview for the
@@ -101,13 +95,12 @@ class Slideshow(object):
                 return self.slides_by_first_event[key]
 
 
-    def find_still_from(self, event, direction = 1):
+    def find_still_from(self, event):
         ''' Finds the first still event in the specified direction. '''
 
         i = event
-        timelines = self.__kpf__.kpf["eventTimelines"]
-        while timelines[i]["automaticPlay"] != 0 and i <= len(timelines):
-            i += direction
+        while self.__kpf__.build_is_autoplay(i) and i <= self.build_count():
+            i += 1
         return i
 
     def keynote_is_playing(self):
@@ -202,12 +195,12 @@ if __name__ == "__main__":
     print >> sys.stderr, "Preparing builds: "
     slideshow.prepare()
 
-    slideshow.start_slide_show()
-    slideshow.next()
-    slideshow.next()
-    slideshow.next()
-    slideshow.previous()
-    slideshow.next()
+    #slideshow.start_slide_show()
+    #slideshow.next()
+    #slideshow.next()
+    #slideshow.next()
+    #slideshow.previous()
+    #slideshow.next()
 
     print slideshow.current_slide
     print slideshow.current_build

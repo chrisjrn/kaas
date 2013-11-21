@@ -19,6 +19,8 @@ import json
 import sys
 import os
 
+from collections import namedtuple
+
 from AppKit import NSBitmapImageRep
 from AppKit import NSCompositeSourceOver
 from AppKit import NSDeviceRGBColorSpace
@@ -40,14 +42,31 @@ class Kpf(object):
     def assemble_slides(self, output_directory):
         assemble_slides(self, output_directory)
 
+    def build_count(self):
+        return NotImplemented
+
+    def build_is_autoplay(self, build):
+        ''' Returns true is the build is an autoplay build '''
+        return NotImplemented
+
+    def navigator_events(self):
+        ''' Returns a sparse array (dictionary) of the first
+        builds for every slide '''
+        return NotImplemented
+
+    def notes(self, slide):
+        ''' Returns the notes for the given slide '''
+        return NotImplemented
+
     def texture(self, name):
         return NotImplemented
 
 
 class KpfV5(Kpf):
 
-    def __init__(self, filename):
-        self.kpfdir = os.path.dirname(filename) # The directory where the textures can be found
+    def __init__(self, kpfdir):
+        self.kpfdir = kpfdir # The directory where the textures can be found
+        filename = os.path.join(kpfdir, "kpf.json")
 
         kpfjson  = open(filename).read()
         self.kpf = json.loads(kpfjson)
@@ -55,6 +74,32 @@ class KpfV5(Kpf):
         h = hashlib.sha256()
         h.update(kpfjson)
         self.hash = h.hexdigest()
+
+    def build_count(self):
+        return len(self.kpf["eventTimelines"])
+
+    def build_is_autoplay(self, build):
+        timelines = self.kpf["eventTimelines"]
+        return timelines[build]["automaticPlay"] != 0
+
+    def navigator_events(self):
+        ''' Returns a sparse array (dictionary) of the first
+        builds for every slide '''
+
+        events = {}
+        for item in self.kpf["navigatorEvents"]:
+            slide = int(item["eventName"].split()[-1]) # Slide number. Yuck
+            build = item["eventIndex"]
+            events[build] = slide
+        return events
+
+    def notes(self, slide):
+        try:
+            return self.kpf["notes"]["slide-%d" % slide]
+        except KeyError:
+            # Slides without notes do not have a key in the notes
+            # dictionary.
+            return u""
 
     def raw_kpf(self):
         return self.kpf
