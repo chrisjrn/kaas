@@ -68,6 +68,9 @@ class Kpf(object):
         ''' Returns the notes for the given slide '''
         return NotImplemented
 
+    def slide_count(self):
+        return NotImplemented
+
     def texture(self, name):
         return NotImplemented
 
@@ -124,6 +127,9 @@ class KpfV5(Kpf):
             # Slides without notes do not have a key in the notes
             # dictionary.
             return u""
+
+    def slide_count(self):
+        return self.kpf["slideCount"]
 
     def texture(self, name):
         return TextureV5(self, name)

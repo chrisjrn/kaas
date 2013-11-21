@@ -42,12 +42,11 @@ class Handlers(object):
 
     def slideshow_info(self, path):
         ''' Returns the basic information about the current slideshow '''
-        kpf = self.show.kpf().raw_kpf()
         info = {
-            "slide_count" : kpf["slideCount"],
-            "build_count" : len(kpf["eventTimelines"]),
+            "slide_count" : self.show.slide_count,
+            "build_count" : self.show.build_count,
             "first_builds" : self.show.first_builds,
-            "hash" : self.show.kpf().kpf_hash(),
+            "hash" : self.show.hash,
         }
         return info
 
@@ -56,7 +55,7 @@ class Handlers(object):
         info = {
             "slide" : self.show.current_slide,
             "build" : self.show.current_build,
-            "hash" : self.show.kpf().kpf_hash(),
+            "hash" : self.show.hash,
         }
         return info
 
@@ -66,7 +65,7 @@ class Handlers(object):
             return self.show.notes(int(path[2]))
         else:
             notes = {}
-            for i in xrange(1, self.slideshow_info(path)["slide_count"] + 1):
+            for i in xrange(1, self.show.slide_count + 1):
                 notes[i] = self.show.notes(i)
             return notes
 

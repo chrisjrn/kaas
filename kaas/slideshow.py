@@ -33,7 +33,16 @@ class Slideshow(object):
         self.current_build = 0 # Builds are 0-indexed
         self.current_slide = 1 # Slides are 1-indexed
 
-        self.build_count = self.__kpf__.build_count()
+        self.__build_count__ = self.__kpf__.build_count()
+        self.__slide_count__ = self.__kpf__.slide_count()
+
+    @property
+    def build_count(self):
+        return self.__build_count__
+
+    @property
+    def slide_count(self):
+        return self.__slide_count__
 
     def path(self):
         ''' Returns the path to the keynote file used to generate this 
@@ -42,6 +51,10 @@ class Slideshow(object):
 
     def kpf(self):
         return self.__kpf__
+
+    @property
+    def hash(self):
+        return self.__kpf__.hash
 
     ''' Lifecycle methods for slideshow '''
 
@@ -99,7 +112,7 @@ class Slideshow(object):
         ''' Finds the first still event in the specified direction. '''
 
         i = event
-        while self.__kpf__.build_is_autoplay(i) and i <= self.build_count():
+        while self.__kpf__.build_is_autoplay(i) and i <= self.build_count:
             i += 1
         return i
 
