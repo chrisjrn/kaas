@@ -19,6 +19,8 @@ import json
 import sys
 import os
 
+import pdb
+
 from collections import namedtuple
 
 from AppKit import NSBitmapImageRep
@@ -35,15 +37,23 @@ from AppKit import NSZeroRect
 
 class Kpf(object):
 
-    def kpf_hash(self):
+    @property
+    def hash(self):
         ''' Identifies this specific slideshow. '''
-        return NotImplemented
+        return self.__hash__
 
     def assemble_slides(self, output_directory):
         assemble_slides(self, output_directory)
 
+    def build(self, index):
+        return NotImplemented
+
     def build_count(self):
         return NotImplemented
+
+    def builds(self):
+        for i in xrange(self.build_count()):
+            yield self.build(i)
 
     def build_is_autoplay(self, build):
         ''' Returns true is the build is an autoplay build '''
@@ -70,7 +80,6 @@ class Kpf(object):
         return self.__width__
 
 
-
 class KpfV5(Kpf):
 
     def __init__(self, kpfdir):
@@ -85,7 +94,10 @@ class KpfV5(Kpf):
 
         h = hashlib.sha256()
         h.update(kpfjson)
-        self.hash = h.hexdigest()
+        self.__hash__ = h.hexdigest()
+
+    def build(self, index):
+        return BuildV5(self, self.kpf["eventTimelines"][index])
 
     def build_count(self):
         return len(self.kpf["eventTimelines"])
@@ -113,14 +125,22 @@ class KpfV5(Kpf):
             # dictionary.
             return u""
 
-    def raw_kpf(self):
-        return self.kpf
-
-    def kpf_hash(self):
-        return self.hash
-
     def texture(self, name):
         return TextureV5(self, name)
+
+
+class Build(object):
+
+    def state(self, index):
+        return NotImplemented
+
+    def state_count(self):
+        return NotImplemented
+
+    def states(self):
+        for i in xrange(self.state_count()):
+            yield self.state(i)
+
 
 class EventState(object):
 
@@ -136,10 +156,26 @@ class EventState(object):
         ''' Returns the affine transform to be applied to the texture '''
         return NotImplemented
 
+
 class Texture(object):
 
     def path(self):
         return NotImplemented
+
+
+class BuildV5(Build):
+
+    def __init__(self, kpf_v5, build_raw):
+        self.build_raw = build_raw
+        self.kpf_v5 = kpf_v5
+        self.initial_states_raw = build_raw["eventInitialStates"]
+
+    def state(self, index):
+        return EventStateV5(self.kpf_v5, self.initial_states_raw[index])
+
+    def state_count(self):
+        return len(self.initial_states_raw)
+
 
 class EventStateV5(EventState):
 
@@ -166,13 +202,14 @@ class TextureV5(Texture):
         self.kpf_v5 = kpf_v5
 
     def path(self):
-        textures = self.kpf_v5.raw_kpf()["textures"]
+        textures = self.kpf_v5.kpf["textures"]
         texture_file = textures[self.texture]["url"]
         return os.path.join(self.kpf_v5.kpfdir, texture_file)
 
+
 def assemble_slides(kpf, output_directory):
 
-    for event_index, event in enumerate(kpf.kpf["eventTimelines"]):
+    for event_index, event in enumerate(kpf.builds()):
         assemble_slide(kpf, output_directory, event_index, event)
 
 
@@ -181,8 +218,7 @@ def assemble_slide(kpf, output_directory, build_index, event):
     init = NSBitmapImageRep.alloc().initWithBitmapDataPlanes_pixelsWide_pixelsHigh_bitsPerSample_samplesPerPixel_hasAlpha_isPlanar_colorSpaceName_bytesPerRow_bitsPerPixel_
     im = init(None, kpf.width, kpf.height, 8, 4, True, False, NSDeviceRGBColorSpace, 0, 0)
 
-    for state_index, _state in enumerate(event["eventInitialStates"]):
-        state = EventStateV5(kpf, _state)
+    for state_index, state in enumerate(event.states()):
         if state.is_hidden() != 0:
             continue
         add_texture(kpf, im, state)
@@ -194,10 +230,8 @@ def assemble_slide(kpf, output_directory, build_index, event):
 
 
 def add_texture(kpf, image, state):
-    #textures = kpf.kpf["textures"]
-    #texture_file = textures[state["texture"]]["url"]
-    texture = state.texture()
 
+    texture = state.texture()
     sx, n0, n1, sy, tx, ty = state.transform()
     
     tex = NSImage.alloc().initWithContentsOfFile_(texture.path())
