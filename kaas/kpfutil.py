@@ -61,6 +61,15 @@ class Kpf(object):
     def texture(self, name):
         return NotImplemented
 
+    @property
+    def height(self):
+        return self.__height__
+
+    @property
+    def width(self):
+        return self.__width__
+
+
 
 class KpfV5(Kpf):
 
@@ -70,6 +79,9 @@ class KpfV5(Kpf):
 
         kpfjson  = open(filename).read()
         self.kpf = json.loads(kpfjson)
+
+        self.__width__ = self.kpf["slideWidth"]
+        self.__height__ = self.kpf["slideHeight"]
 
         h = hashlib.sha256()
         h.update(kpfjson)
@@ -112,6 +124,10 @@ class KpfV5(Kpf):
 
 class EventState(object):
 
+    def is_hidden(self):
+        ''' Is this event state hidden? '''
+        return NotImplemented
+
     def texture(self):
         ''' Returns the texture that this event state applies to '''
         return NotImplemented
@@ -131,13 +147,16 @@ class EventStateV5(EventState):
         self.kpf_v5 = kpf_v5
         self.event_state_raw = event_state_raw
 
+    def is_hidden(self):
+        return self.event_state_raw["hidden"] != 0
+
     def texture(self):
         ''' Returns the texture that this event state applies to '''
-        return TextureV5(self, self.kpf_v5, self.event_state_raw["texture"])
+        return TextureV5(self.kpf_v5, self.event_state_raw["texture"])
 
     def transform(self):
         ''' Returns the affine transform to be applied to the texture '''
-        return self.event_state_raw["texture"]["affineTransform"]
+        return self.event_state_raw["affineTransform"]
 
 
 class TextureV5(Texture):
@@ -160,10 +179,11 @@ def assemble_slides(kpf, output_directory):
 def assemble_slide(kpf, output_directory, build_index, event):
 
     init = NSBitmapImageRep.alloc().initWithBitmapDataPlanes_pixelsWide_pixelsHigh_bitsPerSample_samplesPerPixel_hasAlpha_isPlanar_colorSpaceName_bytesPerRow_bitsPerPixel_
-    im = init(None, kpf.kpf["slideWidth"], kpf.kpf["slideHeight"], 8, 4, True, False, NSDeviceRGBColorSpace, 0, 0)
+    im = init(None, kpf.width, kpf.height, 8, 4, True, False, NSDeviceRGBColorSpace, 0, 0)
 
-    for state_index, state in enumerate(event["eventInitialStates"]):
-        if state["hidden"] != 0:
+    for state_index, _state in enumerate(event["eventInitialStates"]):
+        state = EventStateV5(kpf, _state)
+        if state.is_hidden() != 0:
             continue
         add_texture(kpf, im, state)
 
@@ -175,11 +195,10 @@ def assemble_slide(kpf, output_directory, build_index, event):
 
 def add_texture(kpf, image, state):
     #textures = kpf.kpf["textures"]
-    transform = state["affineTransform"]
     #texture_file = textures[state["texture"]]["url"]
-    texture = kpf.texture(state["texture"])
+    texture = state.texture()
 
-    sx, n0, n1, sy, tx, ty = transform
+    sx, n0, n1, sy, tx, ty = state.transform()
     
     tex = NSImage.alloc().initWithContentsOfFile_(texture.path())
 
