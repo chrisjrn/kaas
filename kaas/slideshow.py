@@ -26,7 +26,8 @@ class Slideshow(object):
     def __init__(self, path, kpfdir):
         self.__path__ = path
         self.__kpfdir__ = kpfdir
-        self.__kpf__ = kpfutil.Kpf(os.path.join(kpfdir, "kpf.json"))
+        # TODO Make this load from most appropriate KPF version
+        self.__kpf__ = kpfutil.KpfV5(os.path.join(kpfdir, "kpf.json"))
 
         # Variables for guessing where keynote is at the moment. Lol.
         self.current_build = 0 # Builds are 0-indexed

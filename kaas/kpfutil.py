@@ -33,6 +33,19 @@ from AppKit import NSZeroRect
 
 class Kpf(object):
 
+    def kpf_hash(self):
+        ''' Identifies this specific slideshow. '''
+        return NotImplemented
+
+    def assemble_slides(self, output_directory):
+        assemble_slides(self, output_directory)
+
+    def texture(self, name):
+        return NotImplemented
+
+
+class KpfV5(Kpf):
+
     def __init__(self, filename):
         self.kpfdir = os.path.dirname(filename) # The directory where the textures can be found
 
@@ -43,16 +56,55 @@ class Kpf(object):
         h.update(kpfjson)
         self.hash = h.hexdigest()
 
-
     def raw_kpf(self):
         return self.kpf
 
     def kpf_hash(self):
         return self.hash
 
-    def assemble_slides(self, output_directory):
-        assemble_slides(self, output_directory)
+    def texture(self, name):
+        return TextureV5(self, name)
 
+class EventState(object):
+
+    def texture(self):
+        ''' Returns the texture that this event state applies to '''
+        return NotImplemented
+
+    def transform(self):
+        ''' Returns the affine transform to be applied to the texture '''
+        return NotImplemented
+
+class Texture(object):
+
+    def path(self):
+        return NotImplemented
+
+class EventStateV5(EventState):
+
+    def __init__(self, kpf_v5, event_state_raw):
+        self.kpf_v5 = kpf_v5
+        self.event_state_raw = event_state_raw
+
+    def texture(self):
+        ''' Returns the texture that this event state applies to '''
+        return TextureV5(self, self.kpf_v5, self.event_state_raw["texture"])
+
+    def transform(self):
+        ''' Returns the affine transform to be applied to the texture '''
+        return self.event_state_raw["texture"]["affineTransform"]
+
+
+class TextureV5(Texture):
+
+    def __init__(self, kpf_v5, texture):
+        self.texture = texture
+        self.kpf_v5 = kpf_v5
+
+    def path(self):
+        textures = self.kpf_v5.raw_kpf()["textures"]
+        texture_file = textures[self.texture]["url"]
+        return os.path.join(self.kpf_v5.kpfdir, texture_file)
 
 def assemble_slides(kpf, output_directory):
 
@@ -77,12 +129,14 @@ def assemble_slide(kpf, output_directory, build_index, event):
 
 
 def add_texture(kpf, image, state):
-    textures = kpf.kpf["textures"]
+    #textures = kpf.kpf["textures"]
     transform = state["affineTransform"]
-    texture_file = textures[state["texture"]]["url"]
+    #texture_file = textures[state["texture"]]["url"]
+    texture = kpf.texture(state["texture"])
+
     sx, n0, n1, sy, tx, ty = transform
     
-    tex = NSImage.alloc().initWithContentsOfFile_(os.path.join(kpf.kpfdir, texture_file))
+    tex = NSImage.alloc().initWithContentsOfFile_(texture.path())
 
     # TODO: support opacity
     if (sx != 1 or sy != 1):

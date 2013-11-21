@@ -34,6 +34,20 @@ COMMANDS["5.0"] = {
     'start_slide_show' : 'start',
 }
 
+# COMMANDS["6.0"] = {
+#     'export_slide_show' : 'export front document to POSIX file "%s" as HTML with properties {rawKPF : true}',
+#     'get_current_slide' : 'slide number of current slide of front slideshow', 
+#     'go_to_slide' : 'show slide %d of front slideshow',
+#     'next_build' : 'show next',
+#     'pause_slide_show' : 'pause slideshow',
+#     'previous_build' : 'show previous',
+#     'resume_slide_show' : 'resume slideshow',
+#     'slide_show_is_playing' : 'playing',
+#     'slide_show_path' : 'name of front document', # TODO get a better response here.
+#     'start_slide_show' : 'start',
+# }
+
+
 def select_version(version = None, excluded = set()):
     global COMMANDS_VERSION
     global APPLICATION_VERSION
