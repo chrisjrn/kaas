@@ -16,6 +16,7 @@
 
 import keynote_script
 import kpfutil
+import kpfutil_v5
 
 import os
 import subprocess
@@ -27,7 +28,7 @@ class Slideshow(object):
         self.__path__ = path
         self.__kpfdir__ = kpfdir
         # TODO Make this load from most appropriate KPF version
-        self.__kpf__ = kpfutil.KpfV5(kpfdir)
+        self.__kpf__ = kpfutil_v5.KpfV5(kpfdir)
 
         # Variables for guessing where keynote is at the moment. Lol.
         self.current_build = 0 # Builds are 0-indexed

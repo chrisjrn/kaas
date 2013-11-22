@@ -18,8 +18,7 @@ The server is written in Python 2.6+, and has a dependency on PyObjC & AppKit.
 Note that the default interpreter is Python 2.6 as this provices PyObjC 
 bindings on most Mac OS X installations with no external dependencies.
 
-It currently does not support Keynote 6 (2013 release), due to Keynote 6's 
-lack of a scripting interface.
+It currently working towards support for Keynote 6 (2013 release).
 
 This is the server component of Keymote, my Android Keynote Remote, which can
 be found on the [Play Store](https://play.google.com/store/apps/details?id=net.noogz.keymote)
@@ -86,9 +85,10 @@ App & Module Structure
 
 - keynote_script.py -- Low-level python-to-Applescript bridge for keynote, 
   exposes functions needed for controlling keynote.
-- kpfutil.py -- Low-level tools for manipulating Keynote's JSON export format, 
-  including assembling build previews from its degenerate textures. See 
-  kpf-json-format.txt for my notes on how the format works.
+- kpfutil.py -- Abstract interface for manipulating Keynote's JSON export formats, 
+  including assembling build previews from its degenerate textures. 
+- kpfutil_v5.py -- Low-level details for manipulating Keynote 5/iWork '09 JSON exports.
+  See kpf-json-format.txt for my notes on how the format works.
 - remote_handler.py -- The GET request handler for the server.
 - remote_gui.py -- TK-based GUI for KAAS.
 - remote_json.py -- Handler for JSON API calls.
