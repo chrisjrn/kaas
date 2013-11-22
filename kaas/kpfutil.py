@@ -43,15 +43,20 @@ class Kpf(object):
         return self.__hash__
 
     def assemble_slides(self, output_directory):
-        assemble_slides(self, output_directory)
+        ''' Outputs all build previews into the output directory '''
+        for build_index, build in enumerate(self.builds()):
+            build.render(os.path.join(output_directory, "build_%00000d" % build_index))
 
     def build(self, index):
+        ''' Returns the index-th build of the slideshow '''
         return NotImplemented
 
     def build_count(self):
+        ''' Returns the number of builds in the slideshow '''
         return NotImplemented
 
     def builds(self):
+        ''' Iterator for all of the builds in the slideshow '''
         for i in xrange(self.build_count()):
             yield self.build(i)
 
@@ -69,17 +74,24 @@ class Kpf(object):
         return NotImplemented
 
     def slide_count(self):
+        ''' Returns the number of slides in the slideshow '''
         return NotImplemented
 
     def texture(self, name):
+        ''' Returns a Texture object, as keyed by the name
+
+        name: the internal KPF name for the texture. The meaning
+        of name depends on the implementation '''
         return NotImplemented
 
     @property
     def height(self):
+        ''' The global height of the slideshow '''
         return self.__height__
 
     @property
     def width(self):
+        ''' The global width of the slideshow '''
         return self.__width__
 
 
@@ -198,15 +210,64 @@ class KpfV6(Kpf):
 
 class Build(object):
 
-    def state(self, index):
+    def render(self, filename):
+        ''' Renders the given build's build preview to an image 
+        with the given filename.
+        '''
+
+        # Sets up a blank bitmap canvas for drawing to. Such an ugly method
+        # call. Any easier way to do this in Obj-C?
+        init = NSBitmapImageRep.alloc().initWithBitmapDataPlanes_pixelsWide_pixelsHigh_bitsPerSample_samplesPerPixel_hasAlpha_isPlanar_colorSpaceName_bytesPerRow_bitsPerPixel_
+        im = init(None, self.kpf.width, self.kpf.height, 8, 4, True, False, NSDeviceRGBColorSpace, 0, 0)
+
+        # Set up the Objective-C graphics context based on the bitmap canvas
+        # we just created
+        context = NSGraphicsContext.graphicsContextWithBitmapImageRep_(im)
+        context.setCompositingOperation_(NSCompositeSourceOver)
+        NSGraphicsContext.setCurrentContext_(context)
+
+        # Ask the implementation to render itself
+        self.__render__()
+
+        # Output the file
+        imjpeg = im.representationUsingType_properties_(NSJPEGFileType, None)
+        imjpeg.writeToFile_atomically_(filename, False)
+
+    def __render__(self):
+        ''' Version-specific method for rendering this build.
+        Will be called by self.render(). '''
         return NotImplemented
 
-    def state_count(self):
-        return NotImplemented
+    def draw_texture(self, texture, location, scale):
+        ''' Draws the texture into this build's graphics context
+        at the location, to the given scale.
 
-    def states(self):
-        for i in xrange(self.state_count()):
-            yield self.state(i)
+        self.render() needs to a call parent of this method, in order
+        to set up the Cocoa graphics context for the draw calls to work
+
+        texture: a Texture object
+        location: (tx, ty) tuple
+        scale: (sx, sy) tuple
+        '''
+
+        tx, ty = location
+        sx, sy = scale
+        
+        tex = NSImage.alloc().initWithContentsOfFile_(texture.path())
+
+        # TODO: support opacity
+        if (sx != 1 or sy != 1):
+            #tex = tex.resize((sx, sy))
+            tex.setSize_(NSSize(sx, sy))
+
+        # Cocoa uses inverted Y-axis...
+        ty_ = self.kpf.height - tex.size().height - ty
+        tex.drawAtPoint_fromRect_operation_fraction_(NSPoint(tx, ty_), NSZeroRect, NSCompositeSourceOver, 1.0)
+
+    @property
+    def kpf(self):
+        ''' Returns the KPF object that this build belongs to '''
+        return self.__kpf__
 
 
 class EventState(object):
@@ -234,11 +295,24 @@ class BuildV5(Build):
 
     def __init__(self, kpf_v5, build_raw):
         self.build_raw = build_raw
+        self.__kpf__ = kpf_v5
         self.kpf_v5 = kpf_v5
         self.initial_states_raw = build_raw["eventInitialStates"]
 
+    def __render__(self):
+        for state in self.states():
+            if state.is_hidden() != 0:
+                continue
+            sx, n0, n1, sy, tx, ty = state.transform()
+            texture = state.texture()
+            self.draw_texture(texture, (tx, ty), (sx, sy))
+    
     def state(self, index):
         return EventStateV5(self.kpf_v5, self.initial_states_raw[index])
+
+    def states(self):
+        for i in xrange(self.state_count()):
+            yield self.state(i)
 
     def state_count(self):
         return len(self.initial_states_raw)
@@ -300,8 +374,6 @@ class EventStateV6(EventState):
             return self.find_texture(dc["layers"][0])
 
 
-
-
 class TextureV5(Texture):
 
     def __init__(self, kpf_v5, texture):
@@ -312,6 +384,7 @@ class TextureV5(Texture):
         textures = self.kpf_v5.kpf["textures"]
         texture_file = textures[self.texture]["url"]
         return os.path.join(self.kpf_v5.kpfdir, texture_file)
+
 
 class TextureV6(Texture):
 
@@ -324,60 +397,11 @@ class TextureV6(Texture):
         return os.path.join(self.kpf_v6.kpfdir, self.slide_path, self.asset)
 
 
-def assemble_slides(kpf, output_directory):
-
-    for event_index, event in enumerate(kpf.builds()):
-        assemble_slide(kpf, output_directory, event_index, event)
-
-
-def assemble_slide(kpf, output_directory, build_index, event):
-
-    init = NSBitmapImageRep.alloc().initWithBitmapDataPlanes_pixelsWide_pixelsHigh_bitsPerSample_samplesPerPixel_hasAlpha_isPlanar_colorSpaceName_bytesPerRow_bitsPerPixel_
-    im = init(None, kpf.width, kpf.height, 8, 4, True, False, NSDeviceRGBColorSpace, 0, 0)
-
-    for state_index, state in enumerate(event.states()):
-        if state.is_hidden() != 0:
-            continue
-        print state.texture().path()
-        add_texture(kpf, im, state)
-    print
-
-    fn = os.path.join(output_directory, "build_%00000d.jpg" % (build_index))
-
-    imjpeg = im.representationUsingType_properties_(NSJPEGFileType, None)
-    imjpeg.writeToFile_atomically_(fn, False)
-
-
-def add_texture(kpf, image, state):
-
-    texture = state.texture()
-    sx, n0, n1, sy, tx, ty = state.transform()
-    
-    tex = NSImage.alloc().initWithContentsOfFile_(texture.path())
-
-    # TODO: support opacity
-    if (sx != 1 or sy != 1):
-        #tex = tex.resize((sx, sy))
-        tex.setSize_(NSSize(sx, sy))
-
-    context = NSGraphicsContext.graphicsContextWithBitmapImageRep_(image)
-    context.setCompositingOperation_(NSCompositeSourceOver)
-    NSGraphicsContext.setCurrentContext_(context)
-
-    # Cocoa uses inverted Y-axis...
-    ty_ = image.size().height - tex.size().height - ty
-    tex.drawAtPoint_fromRect_operation_fraction_(NSPoint(tx, ty_), NSZeroRect, NSCompositeSourceOver, 1.0)
-
-
-#first_initial_transforms()
 def main():
     kpffile = sys.argv[1]
-    kpf = KpfV6(kpffile)
+    kpf = KpfV5(kpffile)
     kpf.assemble_slides(sys.argv[1] + "/builds")
+
 
 if __name__ == "__main__":
     main()
-
-
-
-#print_animation_actions()
