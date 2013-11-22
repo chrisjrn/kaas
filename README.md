@@ -89,6 +89,7 @@ App & Module Structure
   including assembling build previews from its degenerate textures. 
 - kpfutil_v5.py -- Low-level details for manipulating Keynote 5/iWork '09 JSON exports.
   See kpf-json-format.txt for my notes on how the format works.
+- kpfutil_v6.py -- Low-level details for manipulating Keynote 6/iWork 2013 JSON exports.
 - remote_handler.py -- The GET request handler for the server.
 - remote_gui.py -- TK-based GUI for KAAS.
 - remote_json.py -- Handler for JSON API calls.
