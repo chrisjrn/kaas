@@ -35,16 +35,17 @@ COMMANDS["5.0"] = {
 }
 
 COMMANDS["6.0"] = {
+    'export_classic' : 'export front document to POSIX file "%s" as Classic',
     'export_slide_show' : 'export front document to POSIX file "%s" as HTML with properties {rawKPF : true}',
     'get_current_slide' : 'slide number of current slide of front slideshow', 
     'go_to_slide' : 'show slide %d of front slideshow',
     'next_build' : 'show next',
-    'pause_slide_show' : 'pause slideshow',
+    'pause_slide_show' : 'stop front document',
     'previous_build' : 'show previous',
-    'resume_slide_show' : 'resume slideshow',
+    'resume_slide_show' : 'start front document', # resume will *always* fail for the moment
     'slide_show_is_playing' : 'playing',
     'slide_show_path' : 'name of front document', # TODO get a better response here.
-    'start_slide_show' : 'start',
+    'start_slide_show' : 'start front document',
 }
 
 
@@ -86,6 +87,11 @@ def select_version(version = None, excluded = set()):
 def export_slide_show(to_directory):
     ''' Outputs a KPF at to_directory '''
     command = COMMANDS[COMMANDS_VERSION]['export_slide_show'] % (pipes.quote(to_directory))
+    return __execute__(command)
+
+def export_classic(to_file):
+    ''' Outputs a classic keynote file at to_directory '''
+    command = COMMANDS[COMMANDS_VERSION]['export_classic'] % (pipes.quote(to_file))
     return __execute__(command)
 
 def get_current_slide():
