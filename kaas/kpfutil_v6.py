@@ -17,13 +17,16 @@
 ''' Implementation of the various classes in kpfutil.py for the Version 6
 (iWork 2013) RAW KPF format '''
 
+import keynote_script
 import kpfutil
 
 import hashlib
 import json
 import os
+import zipfile
 
 from collections import namedtuple
+from xml.etree import ElementTree
 
 
 class KpfV6(kpfutil.Kpf):
@@ -46,7 +49,10 @@ class KpfV6(kpfutil.Kpf):
         self.__raw_slides__ = {}
         self.__builds__ = []
         self.__textures__ = {}
-        
+
+        self.__event_counter__ = 0
+        self.__navigator_events__ = {}
+
         for _i, name in enumerate(slide_file_names):
             i = _i + 1
             slide_file = os.path.join(kpfdir, name, name+".json")
@@ -54,11 +60,15 @@ class KpfV6(kpfutil.Kpf):
             self.__raw_slides__[i] = raw_slide
             self.__process_slide__(i, name, raw_slide)
 
+        self.generate_notes()
+
     def __process_slide__(self, index, name, raw_slide):
         for filename, asset in raw_slide["assets"].items():
             self.__textures__[filename] = TextureV6(self, name, asset["url"])
 
+        self.__navigator_events__[self.__event_counter__] = index
         for event in raw_slide["events"]:
+            self.__event_counter__ += 1
             build = BuildV6(self, index, event)
             self.__builds__.append(build)
 
@@ -75,17 +85,38 @@ class KpfV6(kpfutil.Kpf):
     def navigator_events(self):
         ''' Returns a sparse array (dictionary) of the first
         builds for every slide '''
-        return {}
+        return self.__navigator_events__
 
     def notes(self, slide):
         ''' Returns the notes for the given slide '''
-        return ""
+        return self.__notes__[slide]
 
     def slide_count(self):
         return self.kpf["slideCount"] 
 
     def texture(self, name):
         return self.__textures__[name]
+
+    ''' Further functionality '''
+
+    def generate_notes(self):
+        f = os.path.join(self.kpfdir, "classic.key")
+        keynote_script.export_classic(f)
+
+        z = zipfile.ZipFile(f)
+        axpl = z.open("index.apxl")
+
+        tree = ElementTree.parse(axpl)
+
+        self.__notes__ = {}
+
+        for slide, i in enumerate(tree.find("{http://developer.apple.com/namespaces/keynote2}slide-list")):
+            text = ""
+            for j in i.find("{http://developer.apple.com/namespaces/keynote2}notes"):
+                text += "".join(itertext(j)).strip()
+            self.__notes__[slide + 1] = text
+
+
 
 
 class BuildV6(kpfutil.Build):
@@ -160,3 +191,17 @@ point = namedtuple("point", ["x", "y"])
 
 def point_kpf(pt):
     return point(x = pt["pointX"], y = pt["pointY"])
+
+
+def itertext(self):
+    tag = self.tag
+    if not isinstance(tag, str) and tag is not None:
+        return
+    if self.text:
+        yield self.text
+    for e in self:
+        for s in itertext(e):
+            yield s
+        if e.tail:
+            yield e.tail
+
