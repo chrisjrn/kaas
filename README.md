@@ -18,7 +18,9 @@ The server is written in Python 2.6+, and has a dependency on PyObjC & AppKit.
 Note that the default interpreter is Python 2.6 as this provices PyObjC 
 bindings on most Mac OS X installations with no external dependencies.
 
-It currently working towards support for Keynote 6 (2013 release).
+It currently has very good support for Keynote version 5 (iWork 2009), and has 
+experimental-quality support for Keynote version 6 (iWork 2013) -- the quality
+of scripting interface is currently far lower in Keynote 6.
 
 This is the server component of Keymote, my Android Keynote Remote, which can
 be found on the [Play Store](https://play.google.com/store/apps/details?id=net.noogz.keymote)

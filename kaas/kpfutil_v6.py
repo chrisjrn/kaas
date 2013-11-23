@@ -100,6 +100,11 @@ class KpfV6(kpfutil.Kpf):
     ''' Further functionality '''
 
     def generate_notes(self):
+        ''' Generates the presenter notes for the current document. Sadly, keynote
+        2013 doesn't provide a simple API for getting notes (yet), so this code
+        does an export to the Keynote 2009 file format, and manually extracts the
+        notes that way. Sorry.'''
+
         f = os.path.join(self.kpfdir, "classic.key")
         keynote_script.export_classic(f)
 
@@ -115,8 +120,6 @@ class KpfV6(kpfutil.Kpf):
             for j in i.find("{http://developer.apple.com/namespaces/keynote2}notes"):
                 text += "".join(itertext(j)).strip()
             self.__notes__[slide + 1] = text
-
-
 
 
 class BuildV6(kpfutil.Build):
