@@ -45,7 +45,7 @@ class Kpf(object):
     def assemble_slides(self, output_directory):
         ''' Outputs all build previews into the output directory '''
         for build_index, build in enumerate(self.builds()):
-            build.render(os.path.join(output_directory, "build_%00000d" % build_index))
+            build.render(os.path.join(output_directory, "build_%00000d.jpg" % build_index))
 
     def build(self, index):
         ''' Returns the index-th build of the slideshow '''
