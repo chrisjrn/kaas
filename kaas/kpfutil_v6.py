@@ -23,6 +23,8 @@ import hashlib
 import json
 import os
 
+from collections import namedtuple
+
 
 class KpfV6(kpfutil.Kpf):
 
@@ -44,6 +46,7 @@ class KpfV6(kpfutil.Kpf):
         self.__raw_slides__ = {}
         self.__builds__ = []
         self.__textures__ = {}
+        
         for _i, name in enumerate(slide_file_names):
             i = _i + 1
             slide_file = os.path.join(kpfdir, name, name+".json")
@@ -58,7 +61,6 @@ class KpfV6(kpfutil.Kpf):
         for event in raw_slide["events"]:
             build = BuildV6(self, index, event)
             self.__builds__.append(build)
-
 
     def build(self, index):
         return self.__builds__[index]
@@ -94,50 +96,53 @@ class BuildV6(kpfutil.Build):
         self.kpf_v6 = kpf_v6
 
     def __render__(self):
-        for state in self.states():
-            if state.is_hidden() != 0:
-                continue
-            sx, n0, n1, sy, tx, ty = state.transform()
-            texture = state.texture()
-            self.draw_texture(texture, (tx, ty), (sx, sy))
+        self.base_layer().draw((0,0))
+
+    def base_layer(self):
+        return LayerV6(self.kpf_v6, self, self.build_raw["baseLayer"])
 
 
-    def state(self, index):
-        return EventStateV6(self.kpf_v6, self.build_raw["baseLayer"]["layers"][index])
+class LayerV6(object):
 
-    def state_count(self):
-        return len(self.build_raw["baseLayer"]["layers"])
-
-    def states(self):
-        for i in xrange(self.state_count()):
-            yield self.state(i)
-
-
-class EventStateV6(object):
-
-    def __init__(self, kpf_v6, event_state_raw):
+    def __init__(self, kpf_v6, build, layer_raw):
         self.kpf_v6 = kpf_v6
-        self.event_state_raw = event_state_raw
+        self.build = build
+        self.layer_raw = layer_raw
 
+    def draw(self, position):
 
-    def is_hidden(self):
-        ''' Is this event state hidden? '''
-        return self.event_state_raw["initialState"]["hidden"] != 0
+        if not isinstance(position, point):
+            position = point(*position)
 
-    def texture(self):
-        ''' Returns the texture that this event state applies to '''
-        texture = self.find_texture(self.event_state_raw) #["layers"][0]["texture"]
-        return self.kpf_v6.texture(texture)
+        state = self.layer_raw["initialState"]
 
-    def transform(self):
-        ''' Returns the affine transform to be applied to the texture '''
-        return self.event_state_raw["layers"][0]["initialState"]["affineTransform"]
+        # Only draw non-hidden layers
+        if state["hidden"]:
+            return
 
-    def find_texture(self, dc):
-        if "texture" in dc:
-            return dc["texture"]
-        if "layers" in dc:
-            return self.find_texture(dc["layers"][0])
+        _anchor = point_kpf(state["anchorPoint"])
+        height = state["height"]
+        width = state["width"]
+
+        # anchorPoint is speficied as fraction of size, let's reify that.
+        anchor = point(x = _anchor.x * width, y = _anchor.y * height)
+
+        _pos = point_kpf(state["position"])
+        
+        # position is provided with the anchor point added. eek.
+        pos = point(x = _pos.x - anchor.x, y = _pos.y - anchor.y)
+
+        # real pos = pos in overall pic, so we can render.
+        real_pos = point(pos.x + position.x, pos.y + position.y)
+
+        for _layer in self.layer_raw["layers"]:
+            layer = LayerV6(self.kpf_v6, self.build, _layer)
+            layer.draw(real_pos)
+
+        if "texture" in self.layer_raw:
+            texture = self.kpf_v6.texture(self.layer_raw["texture"])
+            self.build.draw_texture(texture, real_pos, (1, 1))
+
 
 
 class TextureV6(kpfutil.Texture):
@@ -150,3 +155,8 @@ class TextureV6(kpfutil.Texture):
     def path(self):
         return os.path.join(self.kpf_v6.kpfdir, self.slide_path, self.asset)
 
+
+point = namedtuple("point", ["x", "y"])
+
+def point_kpf(pt):
+    return point(x = pt["pointX"], y = pt["pointY"])
