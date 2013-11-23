@@ -109,9 +109,6 @@ class Application(Frame):
         self.start_serving_button.pack(side = "top", fill = "x")
 
     def start_serving(self):
-
-        keynote_script.select_version(self.keynote_version.get())
-
         self.prepare_show()
 
         pin = remote_server.generate_key()
@@ -127,6 +124,8 @@ class Application(Frame):
         self.start_serving_button["command"] = self.prepare_show
 
     def prepare_show(self):
+        keynote_script.select_version(self.keynote_version.get())
+
         print >> sys.stderr, "Exporting slideshow..."
         remote_server.set_show()
         print >> sys.stderr, "Generating build previews..."
