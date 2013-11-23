@@ -25,11 +25,14 @@ import sys
 
 class Slideshow(object):
 
-    def __init__(self, path, kpfdir):
+    def __init__(self, keynote_version, path, kpfdir):
         self.__path__ = path
         self.__kpfdir__ = kpfdir
-        # TODO Make this load from most appropriate KPF version
-        self.__kpf__ = kpfutil_v6.KpfV6(kpfdir)
+        
+        if keynote_version.startswith("5."):
+            self.__kpf__ = kpfutil_v5.KpfV5(kpfdir)
+        else:
+            self.__kpf__ = kpfutil_v6.KpfV6(kpfdir)
 
         # Variables for guessing where keynote is at the moment. Lol.
         self.current_build = 0 # Builds are 0-indexed
@@ -188,11 +191,12 @@ def generate():
 
     out_dir = os.tmpnam()
     print >> sys.stderr, "Output: ", out_dir
+    print >> sys.stderr, "Keynote version: ", keynote_script.APPLICATION_VERSION
     path = keynote_script.slide_show_path()
     output = keynote_script.export_slide_show(out_dir)
     output = output.strip()
     if output == "":
-        return Slideshow(path, out_dir)
+        return Slideshow(keynote_script.APPLICATION_VERSION, path, out_dir)
     else:
         # FAIL.
         return None

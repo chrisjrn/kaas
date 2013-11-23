@@ -26,6 +26,7 @@ import sys
 from Tkinter import *
 
 import remote_server
+import keynote_script
 
 
 class Application(Frame):
@@ -47,6 +48,9 @@ class Application(Frame):
 
         self.pin_frame = Frame(master=self)
         self.pin_frame.pack(side="top", fill="x")
+
+        self.version_picker_frame = Frame(master=self)
+        self.version_picker_frame.pack(side="top", fill="x")
 
         self.button_frame = Frame(master=self)
         self.button_frame.pack(side="top", fill="x")
@@ -73,7 +77,6 @@ class Application(Frame):
         self.server_address.pack(side = "right")
         self.server_address["text"] = ""
 
-
         # Shows what the PIN number currently is
 
         self.pin_label = Label(master=self.pin_frame)
@@ -84,6 +87,19 @@ class Application(Frame):
         self.pin_value["text"] = ""
         self.pin_value.pack(side = "right")
 
+        # Shows a version picker
+
+        self.version_picker_label = Label(master = self.version_picker_frame)
+        self.version_picker_label["text"] = "Keynote version: "
+        self.version_picker_label.pack(side = "left")
+
+        picker_master = self.version_picker_frame
+        self.keynote_version = StringVar(master = picker_master)
+        OPTIONS = keynote_script.INSTALLED_VERSIONS.keys()
+        self.keynote_version.set(OPTIONS[0]) # default value
+
+        self.version_picker = apply(OptionMenu, (picker_master, self.keynote_version) + tuple(OPTIONS))
+        self.version_picker.pack(side = "right", fill = "x")
 
         # Buttons
 
@@ -93,6 +109,8 @@ class Application(Frame):
         self.start_serving_button.pack(side = "top", fill = "x")
 
     def start_serving(self):
+
+        keynote_script.select_version(self.keynote_version.get())
 
         self.prepare_show()
 
