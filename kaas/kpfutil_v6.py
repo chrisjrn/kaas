@@ -64,7 +64,11 @@ class KpfV6(kpfutil.Kpf):
 
     def __process_slide__(self, index, name, raw_slide):
         for filename, asset in raw_slide["assets"].items():
-            self.__textures__[filename] = TextureV6(self, name, asset["url"])
+            if "index" in asset:
+                tex = TextureV6PDF(self, name, asset["url"], asset["index"])
+            else:
+                tex = TextureV6(self, name, asset["url"])
+            self.__textures__[filename] = tex
 
         self.__navigator_events__[self.__event_counter__] = index
         for event in raw_slide["events"]:
@@ -188,6 +192,21 @@ class TextureV6(kpfutil.Texture):
 
     def path(self):
         return os.path.join(self.kpf_v6.kpfdir, self.slide_path, self.asset)
+
+class TextureV6PDF(kpfutil.TextureWithIndex):
+
+    def __init__(self, kpf_v6, slide_path, asset, index):
+        self.kpf_v6 = kpf_v6
+        self.slide_path = slide_path 
+        self.asset = asset
+        self._index = index
+
+    def path(self):
+        # PDF assets are stored in the root directory of the KPF. Just to confuse you.
+        return os.path.join(self.kpf_v6.kpfdir, self.asset)
+
+    def index(self):
+        return self._index
 
 
 point = namedtuple("point", ["x", "y"])

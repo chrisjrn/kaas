@@ -29,6 +29,7 @@ from AppKit import NSDeviceRGBColorSpace
 from AppKit import NSGraphicsContext
 from AppKit import NSImage
 from AppKit import NSImageRep
+from AppKit import NSPDFImageRep
 from AppKit import NSJPEGFileType
 from AppKit import NSMakeRect
 from AppKit import NSPoint
@@ -140,7 +141,13 @@ class Build(object):
         tx, ty = location
         sx, sy = scale
         
-        tex = NSImage.alloc().initWithContentsOfFile_(texture.path())
+        if isinstance(texture, TextureWithIndex):
+            tex = NSImage.alloc().initWithContentsOfFile_(texture.path())
+            rep = tex.representations()[0]
+            rep.setCurrentPage_(texture.index())
+        elif isinstance(texture, Texture):
+            tex = NSImage.alloc().initWithContentsOfFile_(texture.path())
+
 
         # TODO: support opacity
         if (sx != 1 or sy != 1):
@@ -162,6 +169,10 @@ class Texture(object):
     def path(self):
         return NotImplemented
 
+class TextureWithIndex(Texture):
+
+    def index(self):
+        return NotImplemented
 
 def main():
     kpffile = sys.argv[1]

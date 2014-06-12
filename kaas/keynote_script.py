@@ -44,7 +44,7 @@ COMMANDS["6.2"] = {
     'previous_build' : 'show previous',
     'resume_slide_show' : 'start front document', # resume will *always* fail for the moment
     'slide_show_is_playing' : 'playing',
-    'slide_show_path' : 'file of front document', # TODO get a better response here.
+    'slide_show_path' : 'name of front document', # TODO get a better response here.
     'start_slide_show' : 'start front document',
 }
 
