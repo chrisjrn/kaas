@@ -34,17 +34,17 @@ COMMANDS["5.0"] = {
     'start_slide_show' : 'start',
 }
 
-COMMANDS["6.0"] = {
-    'export_classic' : 'export front document to POSIX file "%s" as Classic',
+COMMANDS["6.2"] = {
+    'export_classic' : 'export front document to POSIX file "%s" as Keynote 09',
     'export_slide_show' : 'export front document to POSIX file "%s" as HTML with properties {rawKPF : true}',
     'get_current_slide' : 'slide number of current slide of front slideshow', 
-    'go_to_slide' : 'show slide %d of front slideshow',
+    'go_to_slide' : 'show slide %d of front document',
     'next_build' : 'show next',
     'pause_slide_show' : 'stop front document',
     'previous_build' : 'show previous',
     'resume_slide_show' : 'start front document', # resume will *always* fail for the moment
     'slide_show_is_playing' : 'playing',
-    'slide_show_path' : 'name of front document', # TODO get a better response here.
+    'slide_show_path' : 'file of front document', # TODO get a better response here.
     'start_slide_show' : 'start front document',
 }
 
