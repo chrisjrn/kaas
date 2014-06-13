@@ -34,6 +34,10 @@ class Slideshow(object):
         else:
             self.__kpf__ = kpfutil_v6.KpfV6(kpfdir)
 
+        version_tuple = tuple(int(i) for i in keynote_version.split("."))
+        self.major_version = version_tuple[0]
+        self.minor_version = version_tuple[1]
+
         # Variables for guessing where keynote is at the moment. Lol.
         self.current_build = 0 # Builds are 0-indexed
         self.current_slide = 1 # Slides are 1-indexed
@@ -154,10 +158,18 @@ class Slideshow(object):
     def synchronise(self):
         ''' Resets the slideshow to the current slide, synchronsises
         the build counter appropriately '''
-        slide = keynote_script.get_current_slide()
-        keynote_script.go_to_slide(slide)
+        
+        sync_truth_keynote = self.major_version != 6
 
-        self.current_slide = slide
+        if sync_truth_keynote:
+            slide = keynote_script.get_current_slide()
+            keynote_script.go_to_slide(slide)
+            self.current_slide = slide
+        else:
+            # don't change slide
+            slide = self.current_slide
+            keynote_script.go_to_slide(slide)
+
         self.current_build = self.build_for_slide(slide)
 
     def previous(self):
