@@ -98,6 +98,8 @@ class Kpf(object):
 
 class Build(object):
 
+    _asset_cache = {}
+
     def render(self, filename):
         ''' Renders the given build's build preview to an image 
         with the given filename.
@@ -140,14 +142,18 @@ class Build(object):
 
         tx, ty = location
         sx, sy = scale
-        
+
+        # Cache all assets so we don't frequently reload our PDFs.
+        path = texture.path()
+        if path in Build._asset_cache:
+            tex = Build._asset_cache[path].copy()
+        else:
+            tex = NSImage.alloc().initWithContentsOfFile_(path)
+            Build._asset_cache[path] = tex.copy()
+
         if isinstance(texture, TextureWithIndex):
-            tex = NSImage.alloc().initWithContentsOfFile_(texture.path())
             rep = tex.representations()[0]
             rep.setCurrentPage_(texture.index())
-        elif isinstance(texture, Texture):
-            tex = NSImage.alloc().initWithContentsOfFile_(texture.path())
-
 
         # TODO: support opacity
         if (sx != 1 or sy != 1):
